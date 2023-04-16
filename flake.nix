@@ -22,7 +22,7 @@
         inherit inputs pkgs;
         modules = [
           ({pkgs, ...}: {
-            packages = [pkgs.zlib pkgs.python3 pkgs.nodejs pkgs.libgccjit pkgs.xorg.libX11 pkgs.libGLU pkgs.libGL pkgs.ffmpeg pkgs.xorg.libXrender];
+            packages = [pkgs.zlib pkgs.python3 pkgs.nodejs pkgs.libgccjit pkgs.xorg.libX11 pkgs.libGLU pkgs.libGL pkgs.ffmpeg pkgs.xorg.libXrender pkgs.f2c];
             
             languages.python = {
               enable = true;
