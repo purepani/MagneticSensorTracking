@@ -20,10 +20,12 @@
     in {
       devShell = devenv.lib.mkShell {
         inherit inputs pkgs;
+       
         modules = [
-          ({pkgs, ...}: {
+          ({pkgs, config, ...}: {
             packages = [pkgs.zlib pkgs.python3 pkgs.nodejs pkgs.libgccjit pkgs.xorg.libX11 pkgs.libGLU pkgs.libGL pkgs.ffmpeg pkgs.xorg.libXrender pkgs.f2c];
-            
+            env.JUPYTER_PATH = "${config.env.DEVENV_STATE}/venv/share/jupyter";
+            env.JUPYTER_CONFIG_DIR = "${config.env.DEVENV_STATE}/venv/etc/jupyter";
             languages.python = {
               enable = true;
               venv.enable = true;

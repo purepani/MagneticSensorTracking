@@ -66,6 +66,8 @@ export DEVENV_DOTFILE='\''/home/nixos/Projects/MagneticSensorTracking/.devenv'\'
 export DEVENV_PROFILE='\''/nix/store/g5nmq7agcswylb4hy9nv5zhya73p3111-devenv-profile'\''
 export DEVENV_ROOT='\''/home/nixos/Projects/MagneticSensorTracking'\''
 export DEVENV_STATE='\''/home/nixos/Projects/MagneticSensorTracking/.devenv/state'\''
+export JUPYTER_CONFIG_DIR='\''/home/nixos/Projects/MagneticSensorTracking/.devenv/state/venv/etc/jupyter'\''
+export JUPYTER_PATH='\''/home/nixos/Projects/MagneticSensorTracking/.devenv/state/venv/share/jupyter'\''
 export PYTHONPATH='\''/nix/store/g5nmq7agcswylb4hy9nv5zhya73p3111-devenv-profile/lib/python3.10/site-packages'\''
 
 source /nix/store/ppcbzzfdi17sih5wy5fir9d91jl4xd7l-init-venv.sh
