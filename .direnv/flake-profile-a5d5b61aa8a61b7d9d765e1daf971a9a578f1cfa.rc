@@ -22,7 +22,7 @@ OSTYPE='linux-gnu'
 PATH='/path-not-set'
 export PATH
 PS4='+ '
-builder='/nix/store/k4j76vg58c6j90s8l46kx3843vysx732-bash-interactive-5.2-p15/bin/bash'
+builder='/nix/store/pk3kkaafln68gzxawk57qp9m5h5285va-bash-interactive-5.2-p15/bin/bash'
 export builder
 dontAddDisableDepTrack='1'
 export dontAddDisableDepTrack
@@ -41,13 +41,13 @@ unset dontAddDisableDepTrack outputs
 
 # For `nix develop`. We get /noshell on Linux and /sbin/nologin on macOS.
 if [[ "$SHELL" == "/noshell" || "$SHELL" == "/sbin/nologin" ]]; then
-  export SHELL=/nix/store/k4j76vg58c6j90s8l46kx3843vysx732-bash-interactive-5.2-p15/bin/bash
+  export SHELL=/nix/store/pk3kkaafln68gzxawk57qp9m5h5285va-bash-interactive-5.2-p15/bin/bash
 fi
 
 # https://github.com/numtide/devshell/issues/158
 PATH=${PATH#/path-not-set:}
 
-export DEVENV_PROFILE=/nix/store/g5nmq7agcswylb4hy9nv5zhya73p3111-devenv-profile
+export DEVENV_PROFILE=/nix/store/h8ilfgbqzml9f29qqz712y3yf1qhhy09-devenv-profile
 
 # add installed packages to PATH
 export PATH="$DEVENV_PROFILE/bin:$PATH"
@@ -63,22 +63,26 @@ export XDG_DATA_DIRS="$DEVENV_PROFILE/share:${XDG_DATA_DIRS-}"
 export XDG_CONFIG_DIRS="$DEVENV_PROFILE/etc/xdg:${XDG_CONFIG_DIRS-}"
 
 export DEVENV_DOTFILE='\''/home/nixos/Projects/MagneticSensorTracking/.devenv'\''
-export DEVENV_PROFILE='\''/nix/store/g5nmq7agcswylb4hy9nv5zhya73p3111-devenv-profile'\''
+export DEVENV_PROFILE='\''/nix/store/h8ilfgbqzml9f29qqz712y3yf1qhhy09-devenv-profile'\''
 export DEVENV_ROOT='\''/home/nixos/Projects/MagneticSensorTracking'\''
 export DEVENV_STATE='\''/home/nixos/Projects/MagneticSensorTracking/.devenv/state'\''
 export JUPYTER_CONFIG_DIR='\''/home/nixos/Projects/MagneticSensorTracking/.devenv/state/venv/etc/jupyter'\''
 export JUPYTER_PATH='\''/home/nixos/Projects/MagneticSensorTracking/.devenv/state/venv/share/jupyter'\''
-export PYTHONPATH='\''/nix/store/g5nmq7agcswylb4hy9nv5zhya73p3111-devenv-profile/lib/python3.10/site-packages'\''
+export PYTHONPATH='\''/nix/store/h8ilfgbqzml9f29qqz712y3yf1qhhy09-devenv-profile/lib/python3.10/site-packages'\''
 
-source /nix/store/ppcbzzfdi17sih5wy5fir9d91jl4xd7l-init-venv.sh
+source /nix/store/3fs18npc1yw756bcrlgqdm053facqfn3-init-venv.sh
 
-source /nix/store/45nrka8qngbrcx0dqclva7m42c0iy9ym-init-poetry.sh
+source /nix/store/2w4pk239ikynq65s658ri0m6iazw21lw-init-poetry.sh
+
+export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH
+export CUDA_PATH=/nix/store/814j4nijg4b7pa2gdxhqh8c72arlbn3h-cudatoolkit-11.7.0
+export CUBLAS_LIB=$CUDA_PATH/lib64/libcublas.so
 
 export PS1="\[\e[0;34m\](devenv)\[\e[0m\] ${PS1-}"
 
 # set path to locales on non-NixOS Linux hosts
 if [ -z "${LOCALE_ARCHIVE-}" ]; then
-  export LOCALE_ARCHIVE=/nix/store/mhbqkarljzdbdbin8ngy444dmgd8f6d2-glibc-locales-2.35-224/lib/locale/locale-archive
+  export LOCALE_ARCHIVE=/nix/store/7n67sxgrwchfjpwjady8rlmp350jzi3n-glibc-locales-2.37-8/lib/locale/locale-archive
 fi
 
 
@@ -95,11 +99,11 @@ fi
 
 mkdir -p .devenv
 rm -f .devenv/profile
-ln -s /nix/store/g5nmq7agcswylb4hy9nv5zhya73p3111-devenv-profile .devenv/profile
+ln -s /nix/store/h8ilfgbqzml9f29qqz712y3yf1qhhy09-devenv-profile .devenv/profile
 
 '
 export shellHook
-stdenv='/nix/store/c04s010hvm720f6r6g9kyqsivj35xd1w-naked-stdenv'
+stdenv='/nix/store/ac5cz6ra06xqymjqr02zjr0ai296ihcq-naked-stdenv'
 export stdenv
 system='x86_64-linux'
 export system
