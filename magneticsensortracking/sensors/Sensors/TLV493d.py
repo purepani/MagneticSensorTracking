@@ -1,0 +1,20 @@
+from magneticsensortracking import sensors
+try:
+    import TLV
+except ImportError:
+    TLV = None
+
+
+class TLV493d(sensors.base.Sensor):
+    def __init__(self):
+        if TLV:
+            self.sensor = TLV.TLV493D()
+        else:
+            print("This class needs the TLV493d package to function")
+
+    def get_magnetometer(self):  # return tuple
+        self.sensor.update_data()
+        x = self.sensor.get_x()
+        y = self.sensor.get_y()
+        z = self.sensor.get_z()
+        return x, y, z

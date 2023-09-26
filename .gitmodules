@@ -1,3 +1,5 @@
 [submodule "Experiments/data"]
 	path = Experiments/data
 	url = http://github.com/purepani/magnetic-sensor-data
+[submodule "Experiments/data/"]
+	branch = main
