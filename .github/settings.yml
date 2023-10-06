@@ -10,6 +10,6 @@ repository:
   has_projects: false
   has_wiki: false
   homepage: CONFIGURE-ME
-  name: CONFIGURE-ME
+  name: MagneticSensorTracking
   private: true
   topics: CONFIGURE-ME
