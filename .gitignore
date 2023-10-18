@@ -6,3 +6,4 @@ node_modules
 /.editorconfig
 /.conform.yaml
 /treefmt.toml
+.pdm-python

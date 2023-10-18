@@ -1,0 +1,59 @@
+<!doctype html>
+
+<html>
+  <body>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+      integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {},
+        },
+      };
+    </script>
+    <script type="text/javascript" charset="utf-8">
+      var socket = io();
+      socket.on("connect", function () {
+        socket.emit("Connected");
+
+        socket.on("sensors", (data) => {
+          let event = new CustomEvent("sensors", {
+            detail: {
+              data: data,
+            },
+          });
+          console.log("Recieved data" + data);
+          window.dispatchEvent(event);
+        });
+      });
+    </script>
+
+    <div x-data>
+      <text @test.window="$el.innerHTML=$event.detail.data"></text>
+    </div>
+    <!-- component -->
+    <div class="mx-auto grid grid-cols-2 bg-zinc-50 p-32">
+      <template
+        x-data="{sensors: []}"
+        @sensors.window="sensors=$event.detail.data.data"
+        x-for="sensor in sensors"
+      >
+        <div
+          class="rounded-lg col-span-1 border border-gray-500 bg-gray-200 p-32"
+        >
+          <p>x:<text x-text="sensor.mag[0]"></text></p>
+          <p>y:<text x-text="sensor.mag[1]"></text></p>
+          <p>z:<text x-text="sensor.mag[2]"></text></p>
+        </div>
+      </template>
+    </div>
+  </body>
+</html>

@@ -1,12 +1,11 @@
 from collections.abc import MutableSequence
-import numpy as np
 
 
 class Sensor:
     def __init__(self):
         raise NotImplementedError()
 
-    def get_data(self):
+    def get_magnetometer(self):
         raise NotImplementedError()
 
 
@@ -30,6 +29,8 @@ class SensorGroup:
         orientations: MutableSequence = [],
     ):
         n = len(sensors)
+        if orientations == []:
+            orientations=[[0,0,1]]*4
         if not (len(positions) == n and len(orientations) == n):
             raise ValueError(
                 "Lists not equal length: Make sure there is a corresponding position and orientation for each sensor"
@@ -50,11 +51,11 @@ class SensorGroup:
         del self.positions[id]
         del self.orientations[id]
 
-    def get_data(self):
-        return np.asarray(map(lambda x: x.get_data(), self.sensors))
+    def get_magnetometer(self):
+        return list(map(lambda x: x.get_magnetometer(), self.sensors))
 
     def get_positions(self):
-        return np.asarray(self.positions)
+        return self.positions
 
     def get_orientations(self):
-        return np.asarray(self.orientations)
+        return self.orientations

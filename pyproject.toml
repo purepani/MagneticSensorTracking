@@ -6,13 +6,31 @@ authors = [
     {name = "", email = ""},
 ]
 dependencies = [
-    "numpy>=1.21.1",
-    "einops"
+    "numpy",
+    "einops",
+    "pandas",
+    "flask>=3.0.0",
+    "flask-socketio>=5.3.6",
+    "eventlet>=0.33.3",
+    "flask-sock>=0.7.0",
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "MIT"}
+
+[project.optional-dependencies]
+sensors = [
+      "adafruit-circuitpython-mlx90393",
+      "adafruit-circuitpython-tlv493d",
+      "lsm303d"
+]
+printer = [
+  "printrun"
+]
 
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+startserver = {call = "magneticsensortracking.ui:main"}
