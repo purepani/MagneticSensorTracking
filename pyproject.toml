@@ -27,6 +27,9 @@ sensors = [
 printer = [
   "printrun"
 ]
+camera = [
+  "picamera"
+]
 
 [build-system]
 requires = ["pdm-backend"]

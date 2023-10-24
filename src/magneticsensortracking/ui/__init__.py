@@ -16,6 +16,7 @@ from flask import (
     session,
     url_for,
 )
+from .videoStream import videoStreamBp
 
 
 # create and configure the app
@@ -43,12 +44,16 @@ def main(sensor_group: sensors.base.SensorGroup = fake):
         # send_test()
 
     def send_sensor_vals():
+        j = 0
         while True:
             pos, mag = get_sensor_vals()
-            data = {"data": [{"pos": pos[i], "mag": mag[i]} for i in range(len(mag))]}
+            data = {"data": [{"pos": pos[i], "mag": j} for i in range(len(mag))]}
             socketio.emit("sensors", data)
+            j += 1
             print("Sent data")
             socketio.sleep(0.1)
+
+    app.register_blueprint(videoStreamBp)
 
     def get_sensor_vals():
         mags = sensor_group.get_magnetometer()

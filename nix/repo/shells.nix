@@ -27,19 +27,19 @@ in {
       lib.lists.zipListsWith (f: a: f a)
       (map lib.dev.mkNixago (with lib.cfg; [
         conform
-        treefmt
-        editorconfig
-        githubsettings
-        lefthook
-        mdbook
+        #treefmt
+        #editorconfig
+        #githubsettings
+        #lefthook
+        #mdbook
       ]))
       [
         {data = {inherit (inputs) cells;};}
-        cell.configs.treefmt
-        cell.configs.editorconfig
-        cell.configs.githubsettings
-        cell.configs.lefthook
-        cell.configs.mdbook
+        #cell.configs.treefmt
+        #cell.configs.editorconfig
+        #cell.configs.githubsettings
+        #cell.configs.lefthook
+        #cell.configs.mdbook
         #(lib.cfg.treefmt cell.configs.treefmt)
         #(lib.cfg.editorconfig cell.configs.editorconfig)
         #(lib.cfg.githubsettings cell.configs.githubsettings)
