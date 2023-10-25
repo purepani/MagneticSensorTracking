@@ -23,7 +23,7 @@ class PRUSA(positioning.base.Path):
         )
         super().__init__(position)
 
-    def __move__(self, pos, rot):
+    def __move__(self, pos, rot=[]):
         pos_shift = pos - self.shift
         modify_position_gcode = "G92"
         for e, axis, i in zip(pos_shift, ["X", "Y", "Z"], range(3)):

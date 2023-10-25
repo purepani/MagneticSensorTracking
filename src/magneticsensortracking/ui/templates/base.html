@@ -30,7 +30,17 @@
               data: data,
             },
           });
-          console.log("Recieved data" + data);
+          console.log("Recieved sensor data" + data);
+          window.dispatchEvent(event);
+        });
+
+        socket.on("printerPos", (data) => {
+          let event = new CustomEvent("printerPos", {
+            detail: {
+              data: data,
+            },
+          });
+          console.log("Recieved printer data" + data);
           window.dispatchEvent(event);
         });
       });
@@ -40,21 +50,33 @@
       <text @test.window="$el.innerHTML=$event.detail.data"></text>
     </div>
     <!-- component -->
-    <div class="mx-auto grid grid-cols-2 bg-zinc-50 p-32">
-      <template
-        x-data="{sensors: []}"
-        @sensors.window="sensors=$event.detail.data.data"
-        x-for="sensor in sensors"
-      >
-        <div
-          class="rounded-lg col-span-1 border border-gray-500 bg-gray-200 p-32"
+    <div x-data="{sensors: [], radius: 0, height: 0}">
+      Radius: <input type="text" x-model.number.lazy="radius"></input>
+      Height: <input type="text" x-model.number.lazy="height"></input>
+
+      <div class="mx-auto grid grid-cols-2 bg-zinc-50 p-32">
+        <template
+          @sensors.window="sensors=$event.detail.data.data"
+          x-for="sensor in sensors"
         >
-          <p>x:<text x-text="sensor.mag[0]"></text></p>
-          <p>y:<text x-text="sensor.mag[1]"></text></p>
-          <p>z:<text x-text="sensor.mag[2]"></text></p>
-        </div>
-      </template>
-      <img src="/videopi" />
+          <div
+            class="rounded-lg col-span-1 border border-gray-500 bg-gray-200 p-32"
+          >
+            <p>Bx:<text x-text="sensor.mag[0]"></text></p>
+            <p>By:<text x-text="sensor.mag[1]"></text></p>
+            <p>Bz:<text x-text="sensor.mag[2]"></text></p>
+          </div>
+        </template>
+        <img src="/videopi" />
+      </div>
     </div>
+    <div x-data='{x:0, y:0, z:0, printer:{}}' @printerPos.window="printer=$event.detail.data">
+  <h1>Printer</h1>
+      <p>x: <input type="text" x-model.number="x" /> Current x: <text x-text="printer.pos[0]"></text></p>
+      <p>y: <input type="text" x-model.number="y" /> Current y: <text x-text="printer.pos[1]"></text></p>
+      <p>z: <input type="text" x-model.number="z" /> Current z: <text x-text="printer.pos[2]"></text></p>
+      <p><button>Move</button></p>
+</div>
+
   </body>
 </html>

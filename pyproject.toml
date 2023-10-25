@@ -13,6 +13,10 @@ dependencies = [
     "flask-socketio>=5.3.6",
     "eventlet>=0.33.3",
     "flask-sock>=0.7.0",
+    "python-socketio>=5.10.0",
+    "quart>=0.19.3",
+    "aiohttp",
+    "uvicorn>=0.23.2",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
@@ -36,4 +40,5 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
-startserver = {call = "magneticsensortracking.ui:main"}
+#startserver = {call = "magneticsensortracking.ui:main"}
+startserver = "uvicorn --factory magneticsensortracking.ui:main"

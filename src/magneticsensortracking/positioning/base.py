@@ -34,6 +34,9 @@ class Path:
     def __move__(self, pos, rot):
         raise NotImplementedError()
 
+    def getPos(self):
+        return self.position[self.time]
+
     def move(self, pos, rot):
         self.position = eo.pack(
             [
@@ -53,7 +56,6 @@ class Path:
         )
         self.time = self.time + 1
         self.__move__(pos, rot)
-
 
     @staticmethod
     def grid(x_min, x_max, x_step, y_min, y_max, y_step, z_min, z_max, z_step):

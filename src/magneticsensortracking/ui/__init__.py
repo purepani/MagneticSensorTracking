@@ -1,12 +1,11 @@
-from magneticsensortracking import sensors
+from magneticsensortracking import sensors, positioning
 import os
 import random
-from flask import Flask
-from flask_sock import Sock
-from flask_socketio import SocketIO, emit
+from quart import Quart
+import socketio
 from time import sleep
 
-from flask import (
+from quart import (
     Blueprint,
     flash,
     g,
@@ -16,48 +15,74 @@ from flask import (
     session,
     url_for,
 )
-from .videoStream import videoStreamBp
+import numpy as np
+
+# from .videoStream import videoStreamBp
 
 
 # create and configure the app
-app = Flask(__name__)
-app.config["SECRET_KEY"] = "secret!"
-socketio = SocketIO(app)
+
+# socketio = SocketIO(app)
+# create a Socket.IO server
 
 
-fake = sensors.base.SensorGroup(
+# wrap with ASGI application
+
+fake_sensor = sensors.base.SensorGroup(
     [sensors.Sensors.VIRTUAL() for _ in range(4)],
     [[0.0, 0.0, 0.0], [1.1, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]],
 )
 
+fake_printer= positioning.devices.VIRTUAL(np.array([[0,0,0]]))
 
-def main(sensor_group: sensors.base.SensorGroup = fake):
-    @app.route("/")
-    def hello_world():
-        return render_template("base.html")
+def main(sensor_group: sensors.base.SensorGroup = fake_sensor, printer: positioning.base.Path = fake_printer):
+
+    qapp = Quart(__name__)
+    sio = socketio.AsyncServer(async_mode="asgi")
+
+    app = socketio.ASGIApp(sio, qapp)
+    @qapp.route("/")
+    async def hello_world():
+        return await render_template("base.html")
         # a simple page that says hello
 
-    @socketio.on("connect")
-    def test_connect(auth):
+    @sio.event
+    def connect(sid, environ, auth):
         print("Connected to client.")
-        socketio.start_background_task(send_sensor_vals)
+        sio.start_background_task(send_sensor_vals)
+        sio.start_background_task(send_printer_vals)
         # send_test()
 
-    def send_sensor_vals():
+    async def send_sensor_vals():
         j = 0
         while True:
-            pos, mag = get_sensor_vals()
-            data = {"data": [{"pos": pos[i], "mag": j} for i in range(len(mag))]}
-            socketio.emit("sensors", data)
+            pos, mag = await get_sensor_vals()
+            data = {"data": [{"pos": pos[i], "mag": mag[i]} for i in range(len(mag))]}
+            await sio.emit("sensors", data)
             j += 1
-            print("Sent data")
-            socketio.sleep(0.1)
+            print("Sent Sensor data")
+            await sio.sleep(0.1)
 
-    app.register_blueprint(videoStreamBp)
 
-    def get_sensor_vals():
+    async def send_printer_vals():
+        j = 0
+        while True:
+            pos  = await get_printer_vals()
+            data = {"data": {"pos": pos}}
+            await sio.emit("printerPos", data)
+            j += 1
+            print("Sent Printer data")
+            await sio.sleep(0.1)
+
+    # qapp.register_blueprint(videoStreamBp)
+
+    async def get_sensor_vals():
         mags = sensor_group.get_magnetometer()
         pos = sensor_group.get_positions()
         return (pos, mags)
 
-    socketio.run(app)
+    async def get_printer_vals():
+        pos = printer.getPos()
+        return pos.tolist()
+    return app
+
