@@ -8,3 +8,4 @@ node_modules
 /treefmt.toml
 .pdm-python
 **/__pycache__/
+__pypackages__/
