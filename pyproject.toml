@@ -18,7 +18,7 @@ dependencies = [
     "aiohttp",
     "uvicorn>=0.23.2",
 ]
-requires-python = ">=3.8"
+requires-python = "==3.9.2"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -32,7 +32,7 @@ printer = [
   "printrun"
 ]
 camera = [
-  "picamera"
+  "picamera2"
 ]
 
 [build-system]
@@ -40,5 +40,10 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
+<<<<<<< Updated upstream
 #startserver = {call = "magneticsensortracking.ui:main"}
 startserver = "uvicorn --factory magneticsensortracking.ui:main"
+=======
+
+startserver = {call = "magneticsensortracking.ui:main", site_packages=true}
+>>>>>>> Stashed changes
