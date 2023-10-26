@@ -35,3 +35,4 @@ class PRUSA(positioning.base.Path):
         x, y, z = pos - self.shift
         self.printer.send(modify_position_gcode)
         self.printer.send(f"G01 X{x} Y{y} Z{z}")
+
