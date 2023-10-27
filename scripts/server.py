@@ -8,5 +8,7 @@ sensors = sensors.base.SensorGroup([sensors.Sensors.MLX90393(i2c=board.I2C(), ad
 app = ui.main(sensor_group=sensors)
 
 if __name__=="__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run("server:app", host="0.0.0.0", port=5000)
+
+
 

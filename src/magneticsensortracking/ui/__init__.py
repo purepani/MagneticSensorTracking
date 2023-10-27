@@ -17,7 +17,7 @@ from quart import (
 )
 import numpy as np
 
-# from .videoStream import videoStreamBp
+from .videoStream import videoStreamBp
 
 
 # create and configure the app
@@ -60,7 +60,7 @@ def main(sensor_group: sensors.base.SensorGroup = fake_sensor, printer: position
             data = {"data": [{"pos": pos[i], "mag": mag[i]} for i in range(len(mag))]}
             await sio.emit("sensors", data)
             j += 1
-            print("Sent Sensor data")
+            #print("Sent Sensor data")
             await sio.sleep(0.1)
 
 
@@ -71,10 +71,10 @@ def main(sensor_group: sensors.base.SensorGroup = fake_sensor, printer: position
             data = {"data": {"pos": pos}}
             await sio.emit("printerPos", data)
             j += 1
-            print("Sent Printer data")
+            #print("Sent Printer data")
             await sio.sleep(0.1)
 
-    # qapp.register_blueprint(videoStreamBp)
+    #qapp.register_blueprint(videoStreamBp)
 
     async def get_sensor_vals():
         mags = sensor_group.get_magnetometer()
