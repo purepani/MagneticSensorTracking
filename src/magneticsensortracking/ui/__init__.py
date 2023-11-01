@@ -4,6 +4,7 @@ import random
 from quart import Quart
 import socketio
 from time import sleep
+import board
 
 from quart import (
     Blueprint,
@@ -21,13 +22,6 @@ import numpy as np
 from .sensorBP import SensorRouting
 from .printerBP import PrinterRouting
 
-# create and configure the app
-
-# socketio = SocketIO(app)
-# create a Socket.IO server
-
-
-# wrap with ASGI application
 
 fake_sensor = sensors.base.SensorGroup(
     [sensors.Sensors.VIRTUAL() for _ in range(4)],
