@@ -5,8 +5,8 @@ import einops as eo
 class Path:
     def __init__(
         self,
-        position=np.array([[0.0, 0.0, 0.0]]),
-        orientation=np.array([[0.0, 0.0, 1.0]]),
+        position: np.ndarray = np.array([[0.0, 0.0, 0.0]]),
+        orientation: np.ndarray = np.array([[0.0, 0.0, 1.0]]),
     ):
         self.position = position
         self.orientation = orientation
@@ -35,21 +35,23 @@ class Path:
         raise NotImplementedError()
 
     def getPos(self):
-        return self.position[self.time]
+        return np.asarray(self.position[self.time])
 
-    def move(self, pos, rot):
-        self.position = eo.pack(
+    def move(self, pos, rot=None):
+        if not rot:
+            rot = self.orientation[self.time]
+        self.position, _ = eo.pack(
             [
                 self.position[: self.time + 1],
-                np.array(pos),
+                np.asarray(pos),
                 self.position[self.time + 1 :],
             ],
             "* d",
         )
-        self.orientation = eo.pack(
+        self.orientation, _ = eo.pack(
             [
                 self.orientation[: self.time + 1],
-                np.array(pos),
+                np.array(rot),
                 self.orientation[self.time + 1 :],
             ],
             "* d",

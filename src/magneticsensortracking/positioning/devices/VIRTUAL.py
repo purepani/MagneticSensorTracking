@@ -1,5 +1,5 @@
 from magneticsensortracking import positioning
-
+import numpy as np
 
 class VIRTUAL(positioning.base.Path):
     def __init__(self, *args):
