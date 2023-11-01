@@ -30,7 +30,7 @@ class SensorGroup:
     ):
         n = len(sensors)
         if orientations == []:
-            orientations=[[0,0,1]]*4
+            orientations=[[0,0,1]]*n
         if not (len(positions) == n and len(orientations) == n):
             raise ValueError(
                 "Lists not equal length: Make sure there is a corresponding position and orientation for each sensor"
