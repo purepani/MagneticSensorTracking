@@ -26,7 +26,7 @@ from .printerBP import PrinterRouting
 class AppFactory:
     def __init__(self, sensor_group=None, printer=None):
         if not sensor_group:
-            self.sensor_group = sensors.base.SensorGroup(
+            sensor_group = sensors.base.SensorGroup(
                 [],
                 [],
             )
@@ -48,7 +48,7 @@ class AppFactory:
         self.printer = printer
         return self
 
-    def addSensor(self, sensor: sensors.base.Sensor, pos, rot):
+    def addSensor(self, sensor: sensors.base.Sensor, pos=[0,0,0], rot=[0, 0, 1]):
         self.sensor_group.add_sensor(sensor, pos, rot)
         return self
 

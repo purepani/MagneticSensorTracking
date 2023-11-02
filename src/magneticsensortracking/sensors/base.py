@@ -40,16 +40,20 @@ class SensorGroup:
         self.orientations = orientations
 
     def add_sensor(
-        self, sensor: Sensor, position: MutableSequence, orientation: MutableSequence
+        self, sensor: Sensor, position: MutableSequence, orientation: MutableSequence=[0,0,1]
     ):
         if not (len(position) == 3 and len(orientation) == 3):
             raise ValueError("Positions and Orientations not length 3")
         self.sensors.append(sensor)
+        self.positions.append(position)
+        self.orientations.append(orientation)
+        return self
 
     def remove_sensor(self, id):
         del self.sensors[id]
         del self.positions[id]
         del self.orientations[id]
+        return self
 
     def get_magnetometer(self):
         return list(map(lambda x: x.get_magnetometer(), self.sensors))

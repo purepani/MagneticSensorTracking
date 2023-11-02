@@ -10,17 +10,18 @@ sensors = [
     sensors.Sensors.MLX90393(i2c=board.I2C(), address=a) for a in range(0x10, 0x14)
 ]
 positions = [[0.0, 0.0, 0.0], [25.0, 0.0, 0.0], [0.0, 25.0, 0.0], [25.0, 25.0, 0.0]]
-printer = positioning.devices.PRUSA(
-    "/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
-    115200,
-)
+#printer = positioning.devices.PRUSA(
+    #"/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
+    #115200,
+#)
 
 
 app_factory = ui.AppFactory()
 app_factory = reduce(
-    lambda x, y: x.addSensor(*y), zip(sensors, positions), initializer=app_factory
+    lambda x, y: x.addSensor(*y), zip(sensors, positions), app_factory
 )
-app_factory.addPrinter(printer)
+#app_factory.addPrinter(printer)
+app_factory.setFakePrinter()
 
 create_app = app_factory.create_app
 
