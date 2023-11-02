@@ -19,7 +19,7 @@ class PRUSA(positioning.base.Path):
             time.sleep(1)
         self.shift = np.min(position, axis=0)
         self.printer.send(
-            f"G92 X{position[0, 0]-self.shift[0]:.1f} Y{position[0, 1]-self.shift[1]:.1f} Z{position[0, 2]-self.shift[2]:.1f}"
+            f"G92 X{-self.shift[0]:.1f} Y{-self.shift[1]:.1f} Z{-self.shift[2]:.1f}"
         )
         super().__init__(position)
 
@@ -35,4 +35,3 @@ class PRUSA(positioning.base.Path):
         x, y, z = pos - self.shift
         self.printer.send(modify_position_gcode)
         self.printer.send(f"G01 X{x} Y{y} Z{z}")
-
