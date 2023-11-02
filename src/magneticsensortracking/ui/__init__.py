@@ -18,7 +18,7 @@ from quart import (
 )
 import numpy as np
 
-# from .videoStream import videoStreamBp
+from .videoStream import videoStreamBp
 from .sensorBP import SensorRouting
 from .printerBP import PrinterRouting
 
@@ -66,7 +66,7 @@ class AppFactory:
         sio.register_namespace(SensorRouting(self.sensor_group))
         sio.register_namespace(PrinterRouting(self.printer))
 
-        # qapp.register_blueprint(videoStreamBp)
+        qapp.register_blueprint(videoStreamBp)
 
         return app
 

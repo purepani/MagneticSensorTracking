@@ -10,16 +10,16 @@ except ImportError:
 
 
 class PRUSA(positioning.base.Path):
-    def __init__(self, printer_path, baud_rate=115200, position=np.array([0, 0, 0])):
+    def __init__(self, printer_path, baud_rate=115200, position=np.array([[0, 0, 0]])):
         if not printcore:
             raise ImportError("Reqires printrun to use 3D printers")
 
         self.printer = printcore(printer_path, baud_rate)
         while not self.printer.online:
             time.sleep(1)
-        self.shift = np.min(position, axis=1)
+        self.shift = np.min(position, axis=0)
         self.printer.send(
-            f"G92 X{-self.shift[0]:.1f} Y{-self.shift[1]:.1f} Z{-self.shift[2]:.1f}"
+            f"G92 X{position[0, 0]-self.shift[0]:.1f} Y{position[0, 1]-self.shift[1]:.1f} Z{position[0, 2]-self.shift[2]:.1f}"
         )
         super().__init__(position)
 
