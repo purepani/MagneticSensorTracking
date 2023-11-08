@@ -26,4 +26,4 @@ app_factory.setPrinter(printer)
 create_app = app_factory.create_app
 
 if __name__ == "__main__":
-    uvicorn.run("server:create_app", host="0.0.0.0", port=5000, factory=True)
+    uvicorn.run("server:create_app", port=5000, factory=True, reload=True)
