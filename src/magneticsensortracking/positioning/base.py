@@ -56,8 +56,8 @@ class Path:
             ],
             "* d",
         )
-        self.time = self.time + 1
         self.__move__(pos, rot)
+        self.time = self.time + 1
 
     @staticmethod
     def grid(x_min, x_max, x_step, y_min, y_max, y_step, z_min, z_max, z_step):

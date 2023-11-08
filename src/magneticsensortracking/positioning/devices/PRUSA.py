@@ -29,7 +29,7 @@ class PRUSA(positioning.base.Path):
         for e, axis, i in zip(pos_shift, ["X", "Y", "Z"], range(3)):
             if e < 0:
                 modify_position_gcode = " ".join(
-                    [modify_position_gcode, f"{axis}{-e:.1f}"]
+                    [modify_position_gcode, f"{axis}{self.position[self.time][i]-e:.1f}"]
                 )
                 self.shift[i] = e
         x, y, z = pos - self.shift
