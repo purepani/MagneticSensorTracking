@@ -110,20 +110,26 @@
           /><br />
         </form>
       </div>
-      <div x-data="{radius:1, height:1}">
+      <div x-data="{radius:1, height:1, magnetism:1240}">
         <h3>Magnet</h3>
-        <form @submit.prevent="socket.emit('sendMagnet', radius, height)">
+        <form @submit.prevent="socket.emit('sendMagnet', radius, height, magnetism)">
           <label for="radius">Radius: </label
           ><input id="radius" type="number" x-model.number.lazy="radius" />
           <select id="unit">
+            <option value="mm">mm.</option>
             <option value="inch">in.</option>
-            <option value="mm">mm.</option></select
-          ><br />
+          </select ><br />
           <label for="height">Height: </label
           ><input id="height" type="number" x-model.number.lazy="height" />
           <select id="unit">
             <option value="mm">mm.</option>
-            <option value="inch">in.</option></select
+            <option value="inch">in.</option>
+          </select ><br />
+
+          <label for="magnetism">M0: </label
+          ><input id="magnetism" type="number" x-model.number.lazy="magnetism" />
+          <select id="unit">
+            <option value="mT">mT</option>
           ><br />
           <input
             type="submit"

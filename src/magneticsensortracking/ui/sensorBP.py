@@ -4,6 +4,7 @@ import socketio
 from magneticsensortracking import sensors
 import numpy as np
 import einops as eo
+import scipy as sp
 
 import argparse
 import asyncio
@@ -27,8 +28,9 @@ class SensorRouting(socketio.AsyncNamespace):
     def on_disconnect(self, sid):
         pass
 
-    async def on_sendMagnet(self, sid, radius, height):
-        self.magnet = np.array([radius, height])
+    async def on_sendMagnet(self, sid, radius, height, magnetism):
+        self.magnet_shape = np.array([radius, height])
+        self.magnet_magnetization = np.array([magnetism])
 
     async def on_predicted(self, sid):
         pass
@@ -36,7 +38,7 @@ class SensorRouting(socketio.AsyncNamespace):
     async def send_sensor_vals(self):
         print("Sent Sensor data")
         while True:
-            pos, mag = await self.get_sensor_vals()
+            pos, mag, predicted = await self.get_sensor_vals()
             data = {"data": [{"pos": p, "mag": m} for p, m in zip(pos, mag)]}
             await self.emit("sensors", data)
             await asyncio.sleep(0.1)
@@ -44,10 +46,11 @@ class SensorRouting(socketio.AsyncNamespace):
     async def get_sensor_vals(self):
         mags = self.sensor_group.get_magnetometer()
         pos = self.sensor_group.get_positions()
-        return (pos, mags)
-
-    async def send_pos_vals(self):
-        pass
+        x0 = np.array([0, 0, 30])
+        M0 = self.magnetization
+        shape = self.magnet_shape
+        predicted = minimize(x0, (mags, pos, M0, shape)).x
+        return (pos, mags, predicted)
 
 
 def B_dipole(position, rotation, M0, shape):
@@ -113,3 +116,7 @@ def rotation_matrix(axis, theta):
 def cost_dipole(x, B, positions, M0, shape):
     diff = getField_dipole(x, positions, M0, shape) - B
     return np.sum((diff) ** 2)
+
+
+def minimize(x0, args=()):
+    return sp.optimize.minimize(cost_dipole, x0, args)
