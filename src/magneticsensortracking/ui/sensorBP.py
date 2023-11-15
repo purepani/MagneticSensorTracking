@@ -19,6 +19,8 @@ import ssl
 class SensorRouting(socketio.AsyncNamespace):
     def __init__(self, sensor_group: sensors.base.SensorGroup, *args, **kwargs):
         self.sensor_group = sensor_group
+        self.magnet_shape = np.array([1, 1])
+        self.magnet_magnetization = np.array([1240])
         self.val_send = asyncio.create_task(self.send_sensor_vals())
         super().__init__(*args, **kwargs)
 
@@ -38,7 +40,7 @@ class SensorRouting(socketio.AsyncNamespace):
     async def send_sensor_vals(self):
         print("Sent Sensor data")
         while True:
-            pos, mag, predicted = await self.get_sensor_vals()
+            pos, mag = await self.get_sensor_vals()
             data = {"data": [{"pos": p, "mag": m} for p, m in zip(pos, mag)]}
             await self.emit("sensors", data)
             await asyncio.sleep(0.1)
@@ -47,10 +49,10 @@ class SensorRouting(socketio.AsyncNamespace):
         mags = self.sensor_group.get_magnetometer()
         pos = self.sensor_group.get_positions()
         x0 = np.array([0, 0, 30])
-        M0 = self.magnetization
+        M0 = self.magnet_magnetization
         shape = self.magnet_shape
-        predicted = minimize(x0, (mags, pos, M0, shape)).x
-        return (pos, mags, predicted)
+        #predicted = minimize(x0, (mags, pos, M0, shape)).x
+        return (pos, mags)
 
 
 def B_dipole(position, rotation, M0, shape):
