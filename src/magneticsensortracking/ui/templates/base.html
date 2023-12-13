@@ -20,12 +20,13 @@
       };
     </script>
     <script type="text/javascript" charset="utf-8">
-      var socket = io();
+      var sensor_socket = io("/sensor");
+      var printer_socket = io("/printer");
       var x = {};
-      socket.on("connect", function () {
-        socket.emit("Connected");
+      sensor_socket.on("connect", function () {
+        sensor_socket.emit("Connected");
 
-        socket.on("sensors", (data) => {
+        sensor_socket.on("sensors", (data) => {
           let event = new CustomEvent("sensors", {
             detail: {
               data: data,
@@ -35,7 +36,7 @@
           window.dispatchEvent(event);
         });
 
-        socket.on("printerPos", (data) => {
+        printer_socket.on("printerPos", (data) => {
           let event = new CustomEvent("printerpos", {
             detail: {
               data: data,
@@ -45,7 +46,7 @@
           window.dispatchEvent(event);
         });
 
-        socket.on("predicted", (data) => {
+        sensor_socket.on("predicted", (data) => {
           let event = new CustomEvent("predicted", {
             detail: {
               data: data,
@@ -60,11 +61,11 @@
     <!-- component -->
     <div
       class="container grid grid-cols-2 bg-zinc-50"
-      x-data="{sensors: [], predicted: {pos:[0, 0, 0], rot: [0,0,1]}}"
+      x-data="{sensors: [], predicted: {pos:{x:0, y:0, z:0}, rot: {x:0, y:0, z:0}}}"
       @sensors.window="sensors=$event.detail.data.data"
-      @predicted.window="predicted=$event.detail.data.data"
+      @predicted.window="predicted=$event.detail.data"
     >
-      <div class="max-w-fit flex grid grid-cols-2 p-16">
+      <div class="max-w-fit flex grid grid-cols-4 p-16">
         <template x-for="sensor in sensors">
           <div class="rounded border border-gray-500 bg-gray-200 p-12">
             Bx: <text x-text="sensor.mag[0]"></text><br />
@@ -74,16 +75,16 @@
         </template>
       </div>
 
-      <div class="max-w-fit grid grid-rows-2 rounded p-16">
+      <div class="max-w-fit grid grid-rows-4 rounded p-16">
         <div class="rounded border border-gray-500 bg-gray-200 p-12">
-          Predicted x: <text x-text="predicted.x"></text><br />
-          Predicted y: <text x-text="predicted.y"></text><br />
-          Predicted z: <text x-text="predicted.z"></text> <br />
+          Predicted x: <text x-text="predicted.pos.x"></text><br />
+          Predicted y: <text x-text="predicted.pos.y"></text><br />
+          Predicted z: <text x-text="predicted.pos.z"></text> <br />
         </div>
         <div class="rounded border border-gray-500 bg-gray-200 p-12">
-          Predicted rotation x: <text x-text="predicted.rot[0]"></text><br />
-          Predicted rotation y: <text x-text="predicted.rot[1]"></text><br />
-          Predicted rotation z: <text x-text="predicted.rot[2]"></text><br />
+          Predicted rotation x: <text x-text="predicted.rot.x"></text><br />
+          Predicted rotation y: <text x-text="predicted.rot.y"></text><br />
+          Predicted rotation z: <text x-text="predicted.rot.z"></text><br />
         </div>
       </div>
     </div>
@@ -93,7 +94,7 @@
         @printerpos.window="printer=$event.detail.data.data"
       >
         <h3>Printer</h3>
-        <form @submit.prevent="socket.emit('printerMove', x, y, z)">
+        <form @submit.prevent="printer_socket.emit('printerMove', x, y, z)">
           <label for="printer_x">x: </label>
           <input id="printer_x" type="text" x-model.number="x" /> Current x:
           <text x-text="printer.pos[0]"></text><br />
@@ -112,7 +113,7 @@
       </div>
       <div x-data="{radius:1, height:1, magnetism:1240}">
         <h3>Magnet</h3>
-        <form @submit.prevent="socket.emit('sendMagnet', radius, height, magnetism)">
+        <form @submit.prevent="sensor_socket.emit('sendMagnet', radius, height, magnetism)">
           <label for="radius">Radius: </label
           ><input id="radius" type="number" x-model.number.lazy="radius" />
           <select id="unit">
@@ -130,7 +131,7 @@
           ><input id="magnetism" type="number" x-model.number.lazy="magnetism" />
           <select id="unit">
             <option value="mT">mT</option>
-          ><br />
+	    </select><br />
           <input
             type="submit"
             value="Set Dimensions"

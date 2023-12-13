@@ -48,7 +48,7 @@ class AppFactory:
         self.printer = printer
         return self
 
-    def addSensor(self, sensor: sensors.base.Sensor, pos=[0,0,0], rot=[0, 0, 1]):
+    def addSensor(self, sensor: sensors.base.Sensor, pos=[0.,0.,0.], rot=[0., 0., 1.]):
         self.sensor_group.add_sensor(sensor, pos, rot)
         return self
 
@@ -63,10 +63,10 @@ class AppFactory:
             return await render_template("base.html")
             # a simple page that says hello
 
-        sio.register_namespace(SensorRouting(self.sensor_group))
-        sio.register_namespace(PrinterRouting(self.printer))
+        sio.register_namespace(SensorRouting(self.sensor_group, 100, namespace="/sensor"))
+        sio.register_namespace(PrinterRouting(self.printer, namespace="/printer"))
 
-        qapp.register_blueprint(videoStreamBp)
+        #qapp.register_blueprint(videoStreamBp)
 
         return app
 

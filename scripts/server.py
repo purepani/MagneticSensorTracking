@@ -3,27 +3,59 @@ import board
 import uvicorn
 import asyncio
 from functools import reduce
+from itertools import product
+import numpy as np
+import multiprocessing
+from multiprocessing import Pool
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 
 # sensors = sensors.base.SensorGroup(, positions=)
 
-sensors = [
-    sensors.Sensors.MLX90393(i2c=board.I2C(), address=a) for a in range(0x10, 0x14)
-]
-positions = [[0.0, 0.0, 0.0], [25.0, 0.0, 0.0], [0.0, 25.0, 0.0], [25.0, 25.0, 0.0]]
-printer = positioning.devices.PRUSA(
-    "/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
-    115200,
-)
 
+def get_sensor(a, i2c):
+    print(f"Starting sensor {hex(a)}")
+    s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4)
+    print(f"Finished sensor {hex(a)}")
+    return s
 
-app_factory = ui.AppFactory()
-app_factory = reduce(
-    lambda x, y: x.addSensor(*y), zip(sensors, positions), app_factory
-)
-app_factory.setPrinter(printer)
-#app_factory.setFakePrinter()
+async def get_sensors(addresses):
+    i2c=board.I2C()
+    sensors_tasks = [asyncio.to_thread(get_sensor, a, i2c) for a in addresses]
+    sensors = await asyncio.gather(*sensors_tasks)
+    return sensors
 
-create_app = app_factory.create_app
+def create_app(sensors):
+    #sensors = [
+        #sensors.Sensors.VIRTUAL() for a in range(16, 32)
+    #]
+
+    #positions = [[0.0, 0.0, 0.0], [25.0, 0.0, 0.0], [0.0, 25.0, 0.0], [25.0, 25.0, 0.0]]
+    #app_factory.setFakePrinter()
+    s = sensors
+    positions = [[a, b, 0.] for b,a in product(list(np.linspace(-13.5/2,13.5/2, 4, endpoint=True)), list(np.linspace(13.5/2,-13.5/2,4, endpoint=True)))]
+    for a, p in zip(range(0x0c, 0x1c), positions):
+            print(hex(a), p)
+    printer = positioning.devices.PRUSA(
+        "/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
+        115200,
+    )
+    app_factory = ui.AppFactory()
+    app_factory = reduce(
+        lambda x, y: x.addSensor(*y), zip(s, positions), app_factory
+    )
+    app_factory.setPrinter(printer)
+    return app_factory.create_app()
+
+async def main():
+    sensors = await get_sensors(range(0x0c, 0x1c))
+    app = create_app(sensors)
+    #uvicorn.rnn("server:create_app", port=5000, host="127.0.0.1")
+    config = uvicorn.Config(app, port=5000, host="127.0.0.1")
+    server = uvicorn.Server(config)
+    await server.serve()
+
 
 if __name__ == "__main__":
-    uvicorn.run("server:create_app", port=5000, factory=True, reload=True)
+    asyncio.run(main())

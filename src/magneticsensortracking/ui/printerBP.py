@@ -19,12 +19,6 @@ class PrinterRouting(socketio.AsyncNamespace):
         self.send_vals = asyncio.create_task(self.send_printer_vals())
         super().__init__(*args, **kwargs)
 
-    def on_connect(self, sid, enivron):
-        pass
-
-    def on_disconnect(self, sid):
-        pass
-
     def on_printerMove(self, sid, x, y, z):
         self.printer.move([x, y, z])
 
