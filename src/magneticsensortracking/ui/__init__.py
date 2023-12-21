@@ -21,6 +21,7 @@ import numpy as np
 from .videoStream import videoStreamBp
 from .sensorBP import SensorRouting
 from .printerBP import PrinterRouting
+from .loggingBP import Logging
 
 
 class AppFactory:
@@ -48,7 +49,9 @@ class AppFactory:
         self.printer = printer
         return self
 
-    def addSensor(self, sensor: sensors.base.Sensor, pos=[0.,0.,0.], rot=[0., 0., 1.]):
+    def addSensor(
+        self, sensor: sensors.base.Sensor, pos=[0.0, 0.0, 0.0], rot=[0.0, 0.0, 1.0]
+    ):
         self.sensor_group.add_sensor(sensor, pos, rot)
         return self
 
@@ -63,10 +66,15 @@ class AppFactory:
             return await render_template("base.html")
             # a simple page that says hello
 
-        sio.register_namespace(SensorRouting(self.sensor_group, 100, namespace="/sensor"))
+        sio.register_namespace(
+            SensorRouting(self.sensor_group, 100, namespace="/sensor")
+        )
         sio.register_namespace(PrinterRouting(self.printer, namespace="/printer"))
+        sio.register_namespace(
+            Logging(self.sensor_group, self.printer, namespace="/logging")
+        )
 
-        #qapp.register_blueprint(videoStreamBp)
+        # qapp.register_blueprint(videoStreamBp)
 
         return app
 
