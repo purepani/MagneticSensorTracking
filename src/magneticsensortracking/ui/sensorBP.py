@@ -55,7 +55,7 @@ class SensorRouting(socketio.AsyncNamespace):
     def __init__(self, sensor_group: sensors.base.SensorGroup, maxlen, *args, **kwargs):
         self.sensor_group = sensor_group
         self.magnet_shape = np.array([25.4 * 3 / 16, 25.4 * 2 / 16])
-        self.magnet_magnetization = np.array([1210])
+        self.magnet_magnetization = np.array([1480])
         self.sensor_vals = AsyncCircularBuffer(maxlen)
         self.tasks = []
         self.clients = 0

@@ -26,28 +26,40 @@ class Logging(socketio.AsyncNamespace):
         self.printer = printer
         self.sensor_group = sensor_group
         self.samples = samples
-        self.save_path = "~/measurements"
+        self.save_path = "/home/raspberrypi/measurements"
         self.current_folder = "";
+        self.measuring = False
         super().__init__(*args, **kwargs)
 
-    async def on_start_measurement(self, sid, folder):
+    async def on_start_measurement(self, sid):
         self.measurement_index = 0
-        self.current_folder=folder
         path = f"{self.save_path}/{self.current_folder}"
         if not os.path.exists(path):
             os.makedirs(path)
+            print("Created Path")
+        print("Ready For Measurements")
         
 
     async def on_record_measurement(self, sid):
+        self.measuring=True
+        print("Recording Measurement")
         pos = self.printer.getPos()
         mags = [await self.get_sensor_vals() for _ in range(self.samples)]
-        with open(f"{self.save_path}/{self.current_folder}/{self.measurement_index}.data", "w") as f:
+        file_path = f"{self.save_path}/{self.current_folder}/{self.measurement_index}.data"
+        with open(file_path, "w+") as f:
+            print(f"Opened {file_path}") 
             f.write("Position\n")
-            f.write(f"{",".join(map(str, pos))}")
+            f.write(f"{','.join(map(str, pos))}\n")
             f.write("Magentizations\n")
-            f.writelines(map(lambda l: ", ".join(map(lambda p: str(tuple(p)), l)), mags))
+            #f.writelines(map(lambda l: ', '.join(map(lambda p: str(tuple(p)), l)), mags))
+            create_sens_string = lambda x: f"({','.join(map(str, x))})"
+            create_line = lambda l: ', '.join(map(create_sens_string, l))+"\n"
+            list(map(f.write, map(create_line, mags)))
+
         self.measurement_index += 1
-        self.emit("finished_measurement")
+        self.measuring=False
+        print("Finished Recording")
+        await self.emit("finished_measurement")
 
     async def on_get_settings(self, sid):
         await self.emit("settings", 
@@ -61,6 +73,12 @@ class Logging(socketio.AsyncNamespace):
     async def on_set_settings(self, sid, folder, samples):
         self.current_folder = folder
         self.samples = int(samples)
+        await self.emit("settings", 
+                            {
+                            "samples": self.samples,
+                            "folder": f"{self.save_path}/{self.current_folder}"
+                            }
+                        )
 
     async def get_sensor_vals(self):
         mags_task = asyncio.to_thread(self.sensor_group.get_magnetometer)

@@ -16,7 +16,7 @@ import asyncio
 
 def get_sensor(a, i2c):
     print(f"Starting sensor {hex(a)}")
-    s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4)
+    s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4, gain=4)
     print(f"Finished sensor {hex(a)}")
     return s
 
@@ -41,6 +41,7 @@ def create_app(sensors):
         "/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
         115200,
     )
+    #printer = positioning.devices.VIRTUAL()
     app_factory = ui.AppFactory()
     app_factory = reduce(
         lambda x, y: x.addSensor(*y), zip(s, positions), app_factory
