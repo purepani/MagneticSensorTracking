@@ -58,10 +58,10 @@ class SensorRouting(socketio.AsyncNamespace):
         self.magnet_shape = np.array([25.4 * 3 / 16, 25.4 * 2 / 16])
         self.magnet_magnetization = np.array([1480])
         self.sensor_vals = AsyncCircularBuffer(maxlen)
+        self.current_prediction = np.zeros((6,))
         self.shift = np.array([0, 0, 0])
         self.tasks = []
         self.clients = 0
-        self.set_zero = False
         # self.tasks.append(asyncio.create_task(self.send_sensor_vals()))
         # self.tasks.append(asyncio.create_task(self.send_predicted_vals()))
         super().__init__(*args, **kwargs)
@@ -115,14 +115,12 @@ class SensorRouting(socketio.AsyncNamespace):
                 vals = np.asarray(queue_vals)
                 mags, pos = np.average(vals, axis=0)
                 loop = asyncio.get_running_loop()
-                predicted, _ = await asyncio.gather(
+                calc_predicted, _ = await asyncio.gather(
                     loop.run_in_executor(pool, minimize, x0, (mags, pos, M0, shape)),
                     asyncio.sleep(0.5),
                 )
-                if self.set_zero:
-                    self.set_zero = False
-                    self.shift = predicted[0:3]
-                predicted[0:3] = predicted[0:3] - self.shift
+                self.current_prediction = calc_predicted
+                predicted = calc_predicted-np.pad(self.shift, (0, 3))
                 data = {
                     "pos": {"x": predicted[0], "y": predicted[1], "z": predicted[2]},
                     "rot": {"x": predicted[3], "y": predicted[4], "z": predicted[5]},
@@ -139,8 +137,9 @@ class SensorRouting(socketio.AsyncNamespace):
         # await asyncio.sleep(0.1)
         return (pos, mags)
 
-    async def onZero(self):
-        self.set_zero = True
+    async def on_zero(self, sid):
+        self.shift = self.current_prediction[:3]
+        print(f"Current shift set to {self.shift}")
 
     async def on_setSensorSetting(self, sid, setting, setting_val):
         sensors = self.sensor_group.sensors
