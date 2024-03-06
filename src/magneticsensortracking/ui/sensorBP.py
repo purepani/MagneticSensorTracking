@@ -57,6 +57,7 @@ class SensorRouting(socketio.AsyncNamespace):
         self.magnet_shape = np.array([25.4 * 3 / 16, 25.4 * 2 / 16])
         self.magnet_magnetization = np.array([1480])
         self.sensor_vals = AsyncCircularBuffer(maxlen)
+        self.zero_shift = np.array([0, 0, 0])
         self.tasks = []
         self.clients = 0
         # self.tasks.append(asyncio.create_task(self.send_sensor_vals()))
@@ -78,9 +79,20 @@ class SensorRouting(socketio.AsyncNamespace):
                 task.cancel()
             self.tasks.clear()
 
-    async def on_sendMagnet(self, sid, radius, height, magnetism):
-        self.magnet_shape = np.array([radius, height])
-        self.magnet_magnetization = np.array([magnetism])
+    async def on_sendMagnet(self, sid, radius, radius_unit, height, height_unit, magnetism, magnetism_unit):
+        length_conversion = {"mm": 1, "inch": 25.4, "inch/16": 25.4/16, "inch/32":25.4/32}
+        magnetism_conversion = {"mT": 1}
+        convert = lambda conv, val, val_unit: conv[val_unit]*val
+        radius_c = convert(length_conversion, radius, radius_unit)
+        height_c = convert(length_conversion, height, height_unit)
+        magnetism_c = convert(magnetism_conversion, magnetism, magnetism_unit)
+        print(f"Changed radius to {radius_c} mm.(sent {radius} {radius_unit})")
+        print(f"Changed height to {height_c} mm.(sent {height} {height_unit})")
+        print(f"Changed radius to {magnetism_c} mT.(sent {magnetism} {magnetism_unit})")
+
+        self.magnet_shape = np.array([radius_c, height_c])
+        self.magnet_magnetization = np.array([magnetism_c])
+
 
     async def send_sensor_vals(self):
         try:
@@ -120,6 +132,33 @@ class SensorRouting(socketio.AsyncNamespace):
         await self.sensor_vals.add((mags, pos))
         # await asyncio.sleep(0.1)
         return (pos, mags)
+
+    async def on_setSensorSetting(self, sid, setting, setting_val):
+        sensors = self.sensor_group.sensors
+        print(setting, setting_val)
+        print(dir(sensors[0]))
+        valid_attrs = {"filter", "gain", "oversampling", "resolution_x", "resolution_y", "resolution_z"}
+        if setting in valid_attrs:
+            if setting=="filter":
+                for s in sensors:
+                    s.filter = setting_val 
+            elif setting=="gain":
+                for s in sensors:
+                    s.gain = setting_val
+            elif setting=="oversampling":
+                for s in sensors:
+                    s.oversampling = setting_val
+            elif setting=="resolution_x":
+                for s in sensors:
+                    s.resolution_x = setting_val
+            elif setting=="resolution_y":
+                for s in sensors:
+                    s.resolution_y = setting_val
+            elif setting=="resolution_z":
+                for s in sensors:
+                    s.resolution_z = setting_val
+
+
 
 
 def B_dipole(position, rotation, M0, shape):

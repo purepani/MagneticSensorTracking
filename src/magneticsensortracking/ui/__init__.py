@@ -25,7 +25,7 @@ from .loggingBP import Logging
 
 
 class AppFactory:
-    def __init__(self, sensor_group=None, printer=None):
+    def __init__(self, sensor_group=None, printer=None, max_sample_buffer=10):
         if not sensor_group:
             sensor_group = sensors.base.SensorGroup(
                 [],
@@ -33,6 +33,7 @@ class AppFactory:
             )
         self.sensor_group = sensor_group
         self.printer = printer
+        self.max_sample_buffer = max_sample_buffer
 
     def setFakeSensor(self):
         self.sensor_group = sensors.base.SensorGroup(
@@ -67,7 +68,7 @@ class AppFactory:
             # a simple page that says hello
 
         sio.register_namespace(
-            SensorRouting(self.sensor_group, 100, namespace="/sensor")
+            SensorRouting(self.sensor_group, self.max_sample_buffer, namespace="/sensor")
         )
         sio.register_namespace(PrinterRouting(self.printer, namespace="/printer"))
         sio.register_namespace(

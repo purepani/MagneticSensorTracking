@@ -19,180 +19,23 @@
         },
       };
     </script>
-    <script type="text/javascript" charset="utf-8">
-      var sensor_socket = io("/sensor");
-      var printer_socket = io("/printer");
-      var logging_socket = io("/logging");
-      var x = {};
-      sensor_socket.on("connect", function () {
-        sensor_socket.emit("Connected");
-
-        sensor_socket.on("sensors", (data) => {
-          let event = new CustomEvent("sensors", {
-            detail: {
-              data: data,
-            },
-          });
-          console.log("Recieved sensor data" + data);
-          window.dispatchEvent(event);
-        });
-
-        printer_socket.on("printerPos", (data) => {
-          let event = new CustomEvent("printerpos", {
-            detail: {
-              data: data,
-            },
-          });
-          console.log("Recieved printer data" + data);
-          window.dispatchEvent(event);
-        });
-
-        sensor_socket.on("predicted", (data) => {
-          let event = new CustomEvent("predicted", {
-            detail: {
-              data: data,
-            },
-          });
-          console.log("Recieved predicted data" + data);
-          window.dispatchEvent(event);
-        });
-
-        logging_socket.on("settings", (settings) => {
-          let event = new CustomEvent("settings", {
-            detail: {
-              data: settings,
-            },
-          });
-          window.dispatchEvent(event);
-        });
-
-        logging_socket.on("finished_measurement", () => {
-          let event = new Event("finished_measurement");
-          window.dispatchEvent(event);
-        });
-
-      });
-    </script>
-
     <!-- component -->
-    <div
-      class="container grid grid-cols-2 bg-zinc-50"
-      x-data="{sensors: [], predicted: {pos:{x:0, y:0, z:0}, rot: {x:0, y:0, z:0}}}"
-      @sensors.window="sensors=$event.detail.data.data"
-      @predicted.window="predicted=$event.detail.data"
-    >
-      <div class="max-w-fit flex grid grid-cols-4 p-16">
-        <template x-for="sensor in sensors">
-          <div class="rounded border border-gray-500 bg-gray-200 p-12">
-            Bx: <text x-text="sensor.mag[0]"></text><br />
-            By: <text x-text="sensor.mag[1]"></text><br />
-            Bz: <text x-text="sensor.mag[2]"></text><br />
-          </div>
-        </template>
-      </div>
+    <div class="w-full grid grid-cols-3 bg-zinc-50">
+    	   {% include 'magnetic_fields.html' %}
 
-      <div class="max-w-fit grid grid-rows-4 rounded p-16">
-        <div class="rounded border border-gray-500 bg-gray-200 p-12">
-          Predicted x: <text x-text="predicted.pos.x"></text><br />
-          Predicted y: <text x-text="predicted.pos.y"></text><br />
-          Predicted z: <text x-text="predicted.pos.z"></text> <br />
-        </div>
-        <div class="rounded border border-gray-500 bg-gray-200 p-12">
-          Predicted rotation x: <text x-text="predicted.rot.x"></text><br />
-          Predicted rotation y: <text x-text="predicted.rot.y"></text><br />
-          Predicted rotation z: <text x-text="predicted.rot.z"></text><br />
-        </div>
-      </div>
+	    <div class = "flex-auto">
+		  <video controls autoplay muted playsinline id="stream">
+			  <source src="/media/stream.mp4" type="video/mp4">
+			    <source src="/media/stream.m3u8" type="application/x-mpegURL">
+		  </video>
+	    </div>
     </div>
     <div class="flex gap-24 p-5">
-      <div
-	x-init="$nextTick(()=>{logging_socket.emit('get_settings')})"
-        x-data="{form_folder:'', form_samples:10, folder: '', samples: 10, measuring: false}"
-        @settings.window="folder=$event.detail.data.folder"
-        @settings.window="samples=$event.detail.data.samples"
-      >
-        <h3>Measurements</h3>
-        <form @submit.prevent="logging_socket.emit('set_settings', form_folder, form_samples)">
-          <label for="folder">Folder: </label>
-          <input id="folder" type="text"  x-model="form_folder"/> Current:
-          <text x-text="folder"></text><br />
-          <label for="samples">Samples: </label>
-          <input id="samples" type="text" x-model.number="form_samples" /> Current:
-          <text x-text="samples"></text><br />
-          <input
-            type="submit"
-            value="Set settings"
-            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-          /><br />
-        </form>
-        <button 
-            @click="logging_socket.emit('start_measurement')" 
-            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-	    >Start New Measurments</button><br />
-        <button 
-            @click="logging_socket.emit('record_measurement'); measuring=true;" 
-            x-bind:disabled="measuring" 
-            @finished_measurement.window="measuring=false"
-            x-text="measuring? 'Measuring...' : 'Take Measurment'"
-            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-            ></button>
-      </div>
-    <div class="flex gap-24 p-5">
-      <div
-        x-data="{x:0, y:0, z:0, printer:{}}"
-        @printerpos.window="printer=$event.detail.data.data"
-      >
-        <h3>Printer</h3>
-        <form @submit.prevent="printer_socket.emit('printerMove', x, y, z)">
-          <label for="printer_x">x: </label>
-          <input id="printer_x" type="text" x-model.number="x" /> Current x:
-          <text x-text="printer.pos[0]"></text><br />
-          <label for="printer_y">y: </label>
-          <input id="printer_y" type="text" x-model.number="y" /> Current y:
-          <text x-text="printer.pos[1]"></text><br />
-          <label for="printer_z">z: </label>
-          <input id="printer_z" type="text" x-model.number="z" /> Current z:
-          <text x-text="printer.pos[2]"></text><br />
-          <input
-            type="submit"
-            value="Move"
-            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-          /><br />
-        </form>
-      </div>
-      <div x-data="{radius:1, height:1, magnetism:1240}">
-        <h3>Magnet</h3>
-        <form @submit.prevent="sensor_socket.emit('sendMagnet', radius, height, magnetism)">
-          <label for="radius">Radius: </label
-          ><input id="radius" type="number" x-model.number.lazy="radius" />
-          <select id="unit">
-            <option value="mm">mm.</option>
-            <option value="inch">in.</option>
-          </select ><br />
-          <label for="height">Height: </label
-          ><input id="height" type="number" x-model.number.lazy="height" />
-          <select id="unit">
-            <option value="mm">mm.</option>
-            <option value="inch">in.</option>
-          </select ><br />
-
-          <label for="magnetism">M0: </label
-          ><input id="magnetism" type="number" x-model.number.lazy="magnetism" />
-          <select id="unit">
-            <option value="mT">mT</option>
-	    </select><br />
-          <input
-            type="submit"
-            value="Set Dimensions"
-            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-          />
-        </form>
-      </div>
+    {% include 'save_measurements.html' %}
+    {% include 'positioning.html' %}
+    {% include 'magnet_settings.html' %}
+    {% include 'sensor_settings.html' %}
       <div>
-  <video controls autoplay muted playsinline id="stream">
-	  <source src="/media/stream.mp4" type="video/mp4">
-	    <source src="/media/stream.m3u8" type="application/x-mpegURL">
-  </video>
 
       </div>
     </div>
