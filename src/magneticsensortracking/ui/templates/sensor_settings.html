@@ -1,0 +1,69 @@
+
+    <script type="text/javascript" charset="utf-8">
+      var sensor_socket = io("/sensor");
+      sensor_socket.on("connect", function () {
+        sensor_socket.emit("Connected");
+
+       });
+</script>
+
+
+
+
+
+      <div x-data="{gain: 7, filter: 7, resolution_x: 0, resolution_y: 0, resolution_z: 0, oversampling: 3}">
+        <h3>Sensor</h3>
+        <form @submit.prevent="">
+          <label for="gain">Gain: </label
+          ><input id="gain" type="number" min="0" max="7" x-model.number="gain" />
+           <button 
+            @click="sensor_socket.emit('setSensorSetting', 'gain', gain)" 
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+	    >Send</button><br />
+	  <br />
+
+          <label for="filter">Filter: </label
+          ><input id="filter" type="number" min="0" max="7" x-model.number="filter" />
+           <button 
+            @click="sensor_socket.emit('setSensorSetting', 'filter', filter)" 
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+	    >Send</button><br />
+	  <br />
+
+          <label for="oversampling">Oversampling: </label
+          ><input id="oversampling" type="number" min="0" max="3" x-model.number="oversampling" />
+           <button 
+            @click="sensor_socket.emit('setSensorSetting', 'oversampling', oversampling)" 
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+	    >Send</button><br />
+	  <br />
+
+          <label for="resolution_x">Resolution(x): </label
+          ><input id="resolution_x" type="number" min="0" max="3" x-model.number="resolution_x" />
+           <button 
+            @click="sensor_socket.emit('setSensorSetting', 'resolution_x', resolution_x)" 
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+	    >Send</button><br />
+	  <br />
+
+
+         <label for="resolution_y">Resolution(y): </label
+          ><input id="resolution_y" type="number" min="0" max="3" x-model.number="resolution_y" />
+           <button 
+            @click="sensor_socket.emit('setSensorSetting', 'resolution_y', resolution_y)" 
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+	    >Send</button><br />
+	  <br />
+
+         <label for="resolution_z">Resolution(z): </label
+          ><input id="resolution_z" type="number" min="0" max="3" x-model.number="resolution_z" />
+           <button 
+            @click="sensor_socket.emit('setSensorSetting', 'resolution_z', resolution_z)" 
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+	    >Send</button><br />
+	  <br />
+
+
+	  
+        </form>
+      </div>

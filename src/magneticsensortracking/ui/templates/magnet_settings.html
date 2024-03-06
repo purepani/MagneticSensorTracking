@@ -1,0 +1,45 @@
+
+    <script type="text/javascript" charset="utf-8">
+      var sensor_socket = io("/sensor");
+      sensor_socket.on("connect", function () {
+        sensor_socket.emit("Connected");
+
+       });
+</script>
+
+
+
+
+
+      <div x-data="{radius:1, height:1, radius_unit:'mm', height_unit:'mm', magnetism:1240, magnetism_unit: 'mT'}">
+        <h3>Magnet</h3>
+        <form @submit.prevent="sensor_socket.emit('sendMagnet', radius, radius_unit, height, height_unit, magnetism, magnetism_unit)">
+          <label for="radius">Radius: </label
+          ><input id="radius" type="number" x-model.number.lazy="radius" />
+          <select id="unit" x-model="radius_unit">
+            <option value="mm">mm.</option>
+            <option value="inch">in.</option>
+            <option value="inch/16">in./16</option>
+            <option value="inch/32">in./32</option>
+          </select ><br />
+          <label for="height">Height: </label
+          ><input id="height" type="number" x-model.number.lazy="height" />
+          <select id="unit" x-model="height_unit">
+            <option value="mm">mm.</option>
+            <option value="inch">in.</option>
+            <option value="inch/16">in./16</option>
+            <option value="inch/32">in./32</option>
+          </select ><br />
+
+          <label for="magnetism">M0: </label
+          ><input id="magnetism" type="number" x-model.number.lazy="magnetism" />
+          <select id="unit">
+            <option value="mT">mT</option>
+	    </select><br />
+          <input
+            type="submit"
+            value="Set Dimensions"
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+          />
+        </form>
+      </div>

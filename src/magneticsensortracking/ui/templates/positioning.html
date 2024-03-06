@@ -1,0 +1,47 @@
+
+    <script type="text/javascript" charset="utf-8">
+      var sensor_socket = io("/sensor");
+      var printer_socket = io("/printer");
+      sensor_socket.on("connect", function () {
+        sensor_socket.emit("Connected");
+
+        printer_socket.on("printerPos", (data) => {
+          let event = new CustomEvent("printerpos", {
+            detail: {
+              data: data,
+            },
+          });
+          console.log("Recieved printer data" + data);
+          window.dispatchEvent(event);
+        });
+
+
+      });
+    </script>
+
+
+
+
+
+      <div
+        x-data="{x:0, y:0, z:0, printer:{}}"
+        @printerpos.window="printer=$event.detail.data.data"
+      >
+        <h3>Printer</h3>
+        <form @submit.prevent="printer_socket.emit('printerMove', x, y, z)">
+          <label for="printer_x">x: </label>
+          <input id="printer_x" type="text" x-model.number="x" /> Current x:
+          <text x-text="printer.pos[0]"></text><br />
+          <label for="printer_y">y: </label>
+          <input id="printer_y" type="text" x-model.number="y" /> Current y:
+          <text x-text="printer.pos[1]"></text><br />
+          <label for="printer_z">z: </label>
+          <input id="printer_z" type="text" x-model.number="z" /> Current z:
+          <text x-text="printer.pos[2]"></text><br />
+          <input
+            type="submit"
+            value="Move"
+            class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+          /><br />
+        </form>
+      </div>

@@ -1,0 +1,54 @@
+
+    <script type="text/javascript" charset="utf-8">
+      var sensor_socket = io("/sensor");
+      sensor_socket.on("connect", function () {
+        sensor_socket.emit("Connected");
+
+        sensor_socket.on("sensors", (data) => {
+          let event = new CustomEvent("sensors", {
+            detail: {
+              data: data,
+            },
+          });
+          console.log("Recieved sensor data" + data);
+          window.dispatchEvent(event);
+        });
+
+        sensor_socket.on("predicted", (data) => {
+          let event = new CustomEvent("predicted", {
+            detail: {
+              data: data,
+            },
+          });
+          console.log("Recieved predicted data" + data);
+          window.dispatchEvent(event);
+        });
+      });
+    </script>
+
+      <div class="max-w-max flex-auto grid grid-cols-4 p-16" 
+      	   @sensors.window="sensors=$event.detail.data.data"
+	   x-data="{sensors: []}">
+        <template x-for="sensor in sensors">
+          <div class="rounded border border-gray-500 bg-gray-200 p-12">
+            Bx: <text x-text="sensor.mag[0].toFixed(5)"></text><br />
+            By: <text x-text="sensor.mag[1].toFixed(5)"></text><br />
+            Bz: <text x-text="sensor.mag[2].toFixed(5)"></text><br />
+          </div>
+        </template>
+      </div>
+
+      <div class="max-w-max flex-auto grid grid-rows-4 rounded p-16" 
+      	   @predicted.window="predicted=$event.detail.data"
+	   x-data="{predicted: {pos:{x:0, y:0, z:0}, rot: {x:0, y:0, z:0}}}">
+        <div class="rounded border border-gray-500 bg-gray-200 p-12">
+          Predicted x: <text x-text="predicted.pos.x.toFixed(5)"></text><br />
+          Predicted y: <text x-text="predicted.pos.y.toFixed(5)"></text><br />
+          Predicted z: <text x-text="predicted.pos.z.toFixed(5)"></text> <br />
+        </div>
+        <div class="rounded border border-gray-500 bg-gray-200 p-12">
+          Predicted rotation x: <text x-text="predicted.rot.x.toFixed(5)"></text><br />
+          Predicted rotation y: <text x-text="predicted.rot.y.toFixed(5)"></text><br />
+          Predicted rotation z: <text x-text="predicted.rot.z.toFixed(5)"></text><br />
+        </div>
+      </div>
