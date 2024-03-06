@@ -58,9 +58,10 @@ class SensorRouting(socketio.AsyncNamespace):
         self.magnet_shape = np.array([25.4 * 3 / 16, 25.4 * 2 / 16])
         self.magnet_magnetization = np.array([1480])
         self.sensor_vals = AsyncCircularBuffer(maxlen)
-        self.zero_shift = np.array([0, 0, 0])
+        self.shift = np.array([0, 0, 0])
         self.tasks = []
         self.clients = 0
+        self.set_zero = False
         # self.tasks.append(asyncio.create_task(self.send_sensor_vals()))
         # self.tasks.append(asyncio.create_task(self.send_predicted_vals()))
         super().__init__(*args, **kwargs)
@@ -118,6 +119,10 @@ class SensorRouting(socketio.AsyncNamespace):
                     loop.run_in_executor(pool, minimize, x0, (mags, pos, M0, shape)),
                     asyncio.sleep(0.5),
                 )
+                if self.set_zero:
+                    self.set_zero = False
+                    self.shift = predicted[0:3]
+                predicted[0:3] = predicted[0:3] - self.shift
                 data = {
                     "pos": {"x": predicted[0], "y": predicted[1], "z": predicted[2]},
                     "rot": {"x": predicted[3], "y": predicted[4], "z": predicted[5]},
@@ -133,6 +138,9 @@ class SensorRouting(socketio.AsyncNamespace):
         await self.sensor_vals.add((mags, pos))
         # await asyncio.sleep(0.1)
         return (pos, mags)
+
+    async def onZero(self):
+        self.set_zero = True
 
     async def on_setSensorSetting(self, sid, setting, setting_val):
         sensors = self.sensor_group.sensors

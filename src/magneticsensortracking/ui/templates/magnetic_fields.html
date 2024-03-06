@@ -51,4 +51,5 @@
           Predicted rotation y: <text x-text="predicted.rot.y.toFixed(5)"></text><br />
           Predicted rotation z: <text x-text="predicted.rot.z.toFixed(5)"></text><br />
         </div>
+	<button @click="sensor_socket.emit("zero")">Set Zero to Current Position</button>
       </div>
