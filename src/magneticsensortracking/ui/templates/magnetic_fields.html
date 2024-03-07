@@ -1,5 +1,7 @@
 
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
     <script type="text/javascript" charset="utf-8">
+
       var sensor_socket = io("/sensor");
       sensor_socket.on("connect", function () {
         sensor_socket.emit("Connected");
@@ -24,6 +26,36 @@
           window.dispatchEvent(event);
         });
       });
+    var createChart = function (id, name, dps) { 
+	var chart = new CanvasJS.Chart(id, {
+		title :{
+			text: name
+		},
+		data: [{
+			type: "line",
+			dataPoints: dps
+			}]
+		});
+	return chart
+	};
+
+	var updateChart = function (chart, pos, dps) {
+		var {x, y, z} = pos;
+	    	dps.push({x: dps.length, y:Math.sqrt(x**2+y**2+z**2)});
+		chart.data=dps;
+		chart.render();
+		};
+
+	var resetChart = function (chart, id, dps) {
+		name = chart.name;	
+		chart.destroy();
+		return createChart(id, name, dps)
+		};
+
+
+
+
+
     </script>
 
       <div class="max-w-max flex-auto grid grid-cols-4 p-16" 
@@ -38,9 +70,10 @@
         </template>
       </div>
 
-      <div class="max-w-max flex-auto grid grid-rows-4 rounded p-16" 
-      	   @predicted.window="predicted=$event.detail.data"
-	   x-data="{predicted: {pos:{x:0, y:0, z:0}, rot: {x:0, y:0, z:0}}}">
+      <div class="max-w-max flex-auto grid grid-rows-4 grid-cols-2 rounded p-16" 
+	   @predicted.window="predicted=$event.detail.data; updateChart(chart, predicted.pos, dps);"
+	   x-init="dps=[]"
+	   x-data="{predicted: {pos:{x:0, y:0, z:0}, rot: {x:0, y:0, z:0}}, dps: [], chart:{}}">
         <div class="rounded border border-gray-500 bg-gray-200 p-12">
           Predicted x: <text x-text="predicted.pos.x.toFixed(5)"></text><br />
           Predicted y: <text x-text="predicted.pos.y.toFixed(5)"></text><br />
@@ -52,4 +85,6 @@
           Predicted rotation z: <text x-text="predicted.rot.z.toFixed(5)"></text><br />
         </div>
 	<button @click="sensor_socket.emit('zero')">Set Zero to Current Position</button>
+	<button @click="dps=[]; chart=resetChart(chart, 'chartContainer', dps)">Reset Chart</button>
+	<div class="flex" x-init="chart=createChart($el.id, 'Test', dps)" id="chartContainer"></div>
       </div>
