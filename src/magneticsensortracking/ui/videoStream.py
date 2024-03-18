@@ -2,10 +2,6 @@ from quart import Blueprint, redirect, render_template, Response, jsonify, reque
 
 
 
-import picamera2
-from picamera2 import Picamera2
-from picamera2.encoders import H264Encoder, MJPEGEncoder, Encoder
-from picamera2.outputs import FileOutput
 from time import time
 
 import argparse
@@ -39,20 +35,6 @@ class StreamingOutput(io.BufferedIOBase):
             self.frame = buf
             self.condition.notify_all()
 
-#defines the function that generates our frames
-def genFrames():
-    #buffer = StreamingOutput()
-    with picamera2.Picamera2() as camera:
-        output = StreamingOutput()
-        camera.configure(camera.create_video_configuration(main={"size": (640, 480)}))
-        output = StreamingOutput()
-        camera.start_recording(MJPEGEncoder(), FileOutput(output))
-        while True:
-            with output.condition:
-                output.condition.wait()
-                frame = output.frame
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
 @videoStreamBp.route('/video.mp4')
