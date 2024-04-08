@@ -26,7 +26,8 @@ license = {text = "MIT"}
 
 [project.optional-dependencies]
 sensors = [
-      "adafruit-circuitpython-mlx90393",
+      #"adafruit-circuitpython-mlx90393",
+      "adafruit-circuitpython-mlx90393@git+https://github.com/purepani/Adafruit_CircuitPython_MLX90393#egg=main",
       "adafruit-circuitpython-tlv493d",
       "lsm303d"
 ]
@@ -34,7 +35,7 @@ printer = [
   "printrun"
 ]
 camera = [
-  "picamera2"
+  #"picamera2"
 ]
 
 [build-system]
