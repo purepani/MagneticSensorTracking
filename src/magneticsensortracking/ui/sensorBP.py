@@ -62,8 +62,8 @@ class SensorRouting(socketio.AsyncNamespace):
         self.shift = np.array([0, 0, 0])
         self.tasks = []
         self.clients = 0
-        # self.tasks.append(asyncio.create_task(self.send_sensor_vals()))
-        # self.tasks.append(asyncio.create_task(self.send_predicted_vals()))
+        self.tasks.append(asyncio.create_task(self.send_sensor_vals()))
+        self.tasks.append(asyncio.create_task(self.send_predicted_vals()))
         super().__init__(*args, **kwargs)
 
     async def on_connect(self, sid, enivron):
@@ -99,8 +99,8 @@ class SensorRouting(socketio.AsyncNamespace):
     async def send_sensor_vals(self):
         try:
             while True:
-                pos, mag = await self.get_sensor_vals()
-                data = {"data": [{"pos": p, "mag": m} for p, m in zip(pos, mag)]}
+                pos, mag, temp  = await self.get_sensor_vals()
+                data = {"data": [{"pos": p, "mag": m, "temp": t,} for p, m, t in zip(pos, mag, temp)]}
                 await self.emit("sensors", data)
         except asyncio.CancelledError:
             print("Sending Sensor Values task cancelled")
@@ -132,10 +132,13 @@ class SensorRouting(socketio.AsyncNamespace):
     async def get_sensor_vals(self):
         mags_task = asyncio.to_thread(self.sensor_group.get_magnetometer)
         pos_task = asyncio.to_thread(self.sensor_group.get_positions)
+            
         mags, pos = await asyncio.gather(mags_task, pos_task)  # , asyncio.sleep(0.1))
+        temp = list(range(len(mags)))
+
         await self.sensor_vals.add((mags, pos))
-        # await asyncio.sleep(0.1)
-        return (pos, mags)
+        await asyncio.sleep(0.1)
+        return (pos, mags, temp)
 
     async def on_zero(self, sid):
         self.shift = self.current_prediction[:3]

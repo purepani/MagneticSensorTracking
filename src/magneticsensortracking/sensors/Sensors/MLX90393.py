@@ -25,6 +25,9 @@ class MLX90393(base.Sensor):
         x, y, z = self.sensor.magnetic
         return x/1000, y/1000, z/1000
 
+    def get_temperature(self):
+        return self.sensor.temperature
+
     @property
     def filter(self):
         return self.sensor.filter
