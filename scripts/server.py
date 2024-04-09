@@ -16,6 +16,7 @@ import asyncio
 
 def get_sensor(a, i2c):
     print(f"Starting sensor {hex(a)}")
+<<<<<<< HEAD
     while True:
         try:
             s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4, gain=4)
@@ -23,6 +24,9 @@ def get_sensor(a, i2c):
         except Exception as e:
             print(f"Error connecting to sensor at address {a}: {e}")
             print("Retrying...")
+=======
+    s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4, gain=4, resolution=0, debug=False)
+>>>>>>> c7e6458ee32eb89c934ff2e44453b011cd732d9e
     print(f"Finished sensor {hex(a)}")
     return s
 
@@ -58,6 +62,11 @@ def create_app(sensors):
 
 async def main():
     sensors = await get_sensors(range(0x0c, 0x1c))
+    offsets = np.loadtxt("offset_cal.csv", dtype=np.uint16)
+    for i, sensor in enumerate(sensors):
+        sensor.sensor.write_reg(0x04, offsets[i, 0])
+        sensor.sensor.write_reg(0x05, offsets[i, 1])
+        sensor.sensor.write_reg(0x06, offsets[i, 2])
     app = create_app(sensors)
     #uvicorn.rnn("server:create_app", port=5000, host="127.0.0.1")
     config = uvicorn.Config(app, port=5000, host="127.0.0.1")

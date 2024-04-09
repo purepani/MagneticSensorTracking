@@ -3,6 +3,15 @@
       var sensor_socket = io("/sensor");
       sensor_socket.on("connect", function () {
         sensor_socket.emit("Connected");
+        sensor_socket.on("sendTemperatureCompensation", (data) => {
+          let event = new CustomEvent("send_temp_comp", {
+            detail: {
+              data: data,
+            },
+          });
+	  console.log("temp comp is" + data)
+          window.dispatchEvent(event);
+        });
 
        });
 </script>
@@ -11,7 +20,7 @@
 
 
 
-      <div x-data="{gain: 7, filter: 7, resolution_x: 0, resolution_y: 0, resolution_z: 0, oversampling: 3}">
+      <div x-data="{gain: 7, filter: 7, resolution_x: 0, resolution_y: 0, resolution_z: 0, oversampling: 3, isTemperatureCompensation: false,}">
         <h3>Sensor</h3>
         <form @submit.prevent="">
           <label for="gain">Gain: </label
@@ -63,6 +72,11 @@
 	    >Send</button><br />
 	  <br />
 
+	   <label for="temp_comp">Enable Temperature Compensation</label>
+   	   <input
+           @change.debounse="sensor_socket.emit('setTemperatureCompensation', isTemperatureCompensation, )" 
+           @send_temp_comp.window="isTemperatureCompensation=$event.detail.data" 
+	   type="checkbox" id="temp_comp" x-model="isTemperatureCompensation" />
 
 	  
         </form>
