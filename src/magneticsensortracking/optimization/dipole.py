@@ -19,26 +19,14 @@ def B_dipole(position, rotation, M0, shape):
 
 
 def getField_dipole(x, positions, M0, shape):
-    # magnetization=x[5]
-    # magnetization=1210
     position = x[:3]
     axis = x[3:]
-    # axis=np.array([0,0,1])
-    # phi = x[3]
-    # theta = x[4]
-    # axis = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
     return B_dipole(positions - position, axis, M0, shape)
 
 
 def getField_dipole_fixed(x, positions, M0, shape):
-    # magnetization=x[5]
-    # magnetization=1210
     position = x[:3]
     axis = x[3:]
-    # axis = np.array([0.0, 0.0, 1.0])
-    # phi = x[3]
-    # theta = x[4]
-    # axis = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
     return B_dipole(positions - position, axis, M0, shape)
 
 
@@ -47,13 +35,13 @@ def cost_dipole(x, B, positions, M0, shape):
     return np.sum((diff) ** 2)
 
 
-def minimize(x0, args):
+def minimize(x0, B, positions, M0, shape, *args):
     print("Starting mimimization")
-    # x0 = [x, y, z, th_x, th_y, th_z]
+    args = (B, positions, M0, shape)
     cons = [{"type": "eq", "fun": lambda x: x[3] ** 2 + x[4] ** 2 + x[5] ** 2 - 1}]
     bounds = [(-100, 100), (-100, 100), (0, 100), (-1, 1), (-1, 1), (-1, 1)]
     res = sp.optimize.minimize(
-        fun=cost_dipole, x0=x0, args=args, tol=1e-100, constraints=cons, bounds=bounds
-    ).x  # , options={'maxiter': 1000}).x
+        fun=cost_dipole, x0=x0, args=args, tol=1e-100, constraints=cons, bounds=bounds, *args
+    ).x  
     print(f"Finished mimimization with shape {args[3]} at {res}")
     return res

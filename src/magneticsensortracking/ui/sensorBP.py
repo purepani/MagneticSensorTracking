@@ -66,6 +66,7 @@ class SensorRouting(socketio.AsyncNamespace):
         # self.tasks.append(asyncio.create_task(self.send_predicted_vals()))
         super().__init__(*args, **kwargs)
 
+
     async def on_connect(self, sid, enivron):
         self.clients += 1
         print(f"Client joined. Total current clients: {self.clients}")
@@ -116,7 +117,7 @@ class SensorRouting(socketio.AsyncNamespace):
                 mags, pos = np.average(vals, axis=0)
                 loop = asyncio.get_running_loop()
                 calc_predicted, _ = await asyncio.gather(
-                    loop.run_in_executor(pool, minimize, x0, (mags, pos, M0, shape)),
+                    loop.run_in_executor(pool, minimize, x0, mags, pos, M0, shape),
                     asyncio.sleep(0.5),
                 )
                 self.current_prediction = calc_predicted

@@ -66,12 +66,14 @@ class AppFactory:
             return await render_template("base.html")
             # a simple page that says hello
 
+        logging_router = Logging(self.sensor_group, self.printer, namespace="/logging")
+
         sio.register_namespace(
             SensorRouting(self.sensor_group, self.max_sample_buffer, namespace="/sensor")
         )
         sio.register_namespace(PrinterRouting(self.printer, namespace="/printer"))
         sio.register_namespace(
-            Logging(self.sensor_group, self.printer, namespace="/logging")
+                logging_router
         )
 
         # qapp.register_blueprint(videoStreamBp)
