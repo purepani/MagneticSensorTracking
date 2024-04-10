@@ -1,9 +1,22 @@
 import magneticsensortracking.sensors.base as base
+import struct
 
 try:
     import adafruit_mlx90393
 except ImportError:
     adafruit_mlx90393 = None
+
+
+
+
+
+from typing import Tuple
+
+from busio import I2C
+from circuitpython_typing import ReadableBuffer
+
+import time
+
 
 
 class MLX90393(base.Sensor):
@@ -21,6 +34,8 @@ class MLX90393(base.Sensor):
             )
         else:
             print("This class needs the package adafruit_circuitpython_mlx90393")
+
+
     def get_magnetometer(self):
         x, y, z = self.sensor.magnetic
         return x/1000, y/1000, z/1000
@@ -74,3 +89,13 @@ class MLX90393(base.Sensor):
     @resolution_z.setter
     def resolution_z(self, val):
         self.sensor.resolution_z = val
+
+    @property
+    def temperature_compensation(self,):
+        return self.sensor.temperature_compensation
+
+    @temperature_compensation.setter 
+    def temperature_compensation(self, val):
+        self.sensor.temperature_compensation=val
+
+

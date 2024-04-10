@@ -21,6 +21,7 @@ import numpy as np
 from .sensorBP import SensorRouting
 from .printerBP import PrinterRouting
 from .loggingBP import Logging
+from .videoStream import videoStreamBp
 
 
 class AppFactory:
@@ -76,7 +77,7 @@ class AppFactory:
                 logging_router
         )
 
-        # qapp.register_blueprint(videoStreamBp)
+        qapp.register_blueprint(videoStreamBp)
 
         return app
 
