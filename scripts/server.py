@@ -16,7 +16,6 @@ import asyncio
 
 def get_sensor(a, i2c):
     print(f"Starting sensor {hex(a)}")
-<<<<<<< HEAD
     while True:
         try:
             s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4, gain=4)
@@ -24,9 +23,7 @@ def get_sensor(a, i2c):
         except Exception as e:
             print(f"Error connecting to sensor at address {a}: {e}")
             print("Retrying...")
-=======
     s = sensors.Sensors.MLX90393(i2c=i2c, address=a, oversampling=2, filt=4, gain=4, resolution=0, debug=False)
->>>>>>> c7e6458ee32eb89c934ff2e44453b011cd732d9e
     print(f"Finished sensor {hex(a)}")
     return s
 

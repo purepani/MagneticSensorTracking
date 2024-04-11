@@ -14,9 +14,6 @@ import platform
 import ssl
 
 from threading import Condition
-from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack, MediaStreamTrack
-from aiortc.contrib.media import MediaPlayer, MediaRelay
-from aiortc.rtcrtpsender import RTCRtpSender
 
 
 

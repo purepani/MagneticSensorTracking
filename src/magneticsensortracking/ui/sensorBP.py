@@ -132,17 +132,13 @@ class SensorRouting(socketio.AsyncNamespace):
     async def get_sensor_vals(self):
         mags_task = asyncio.to_thread(self.sensor_group.get_magnetometer)
         pos_task = asyncio.to_thread(self.sensor_group.get_positions)
-<<<<<<< HEAD
             
-        mags, pos = await asyncio.gather(mags_task, pos_task)  # , asyncio.sleep(0.1))
-        temp = list(range(len(mags)))
 
-=======
         mags, pos = await asyncio.gather(mags_task, pos_task, return_exceptions=True)  # , asyncio.sleep(0.1))
         for m in mags:
             if m is Exception:
                 raise m
->>>>>>> c7e6458ee32eb89c934ff2e44453b011cd732d9e
+        temp = list(range(len(mags)))
         await self.sensor_vals.add((mags, pos))
         await asyncio.sleep(0.1)
         return (pos, mags, temp)
