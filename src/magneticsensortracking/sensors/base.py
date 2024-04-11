@@ -30,7 +30,7 @@ class SensorGroup:
     ):
         n = len(sensors)
         if orientations == []:
-            orientations=[[0,0,1]]*n
+            orientations = [[0, 0, 1]] * n
         if not (len(positions) == n and len(orientations) == n):
             raise ValueError(
                 "Lists not equal length: Make sure there is a corresponding position and orientation for each sensor"
@@ -40,7 +40,10 @@ class SensorGroup:
         self.orientations = orientations
 
     def add_sensor(
-        self, sensor: Sensor, position: MutableSequence, orientation: MutableSequence=[0,0,1]
+        self,
+        sensor: Sensor,
+        position: MutableSequence,
+        orientation: MutableSequence = [0, 0, 1],
     ):
         if not (len(position) == 3 and len(orientation) == 3):
             raise ValueError("Positions and Orientations not length 3")
@@ -55,8 +58,8 @@ class SensorGroup:
         del self.orientations[id]
         return self
 
-    def get_magnetometer(self):
-        return list(map(lambda x: x.get_magnetometer(), self.sensors))
+    def get_magnetometer(self, *args):
+        return list(map(lambda x: x.get_magnetometer(*args), self.sensors))
 
     def get_positions(self):
         return self.positions

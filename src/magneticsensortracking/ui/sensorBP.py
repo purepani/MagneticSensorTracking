@@ -1,24 +1,23 @@
-from quart import Blueprint, render_template, Response, jsonify, request
-from quart.utils import run_sync
-import socketio
-
-from magneticsensortracking import sensors
-from magneticsensortracking.optimization.find_position import minimize
-import numpy as np
-import einops as eo
-import scipy as sp
-
 import argparse
 import asyncio
+import io
 import json
 import logging
-import io
 import os
 import platform
 import ssl
 from collections import deque
-
 from concurrent.futures import ProcessPoolExecutor
+
+import einops as eo
+import numpy as np
+import scipy as sp
+import socketio
+from quart import Blueprint, Response, jsonify, render_template, request
+from quart.utils import run_sync
+
+from magneticsensortracking import sensors
+from magneticsensortracking.optimization.find_position import minimize
 
 
 class AsyncCircularBuffer:
@@ -66,7 +65,6 @@ class SensorRouting(socketio.AsyncNamespace):
         # self.tasks.append(asyncio.create_task(self.send_predicted_vals()))
         super().__init__(*args, **kwargs)
 
-
     async def on_connect(self, sid, enivron):
         self.clients += 1
         print(f"Client joined. Total current clients: {self.clients}")
@@ -82,10 +80,17 @@ class SensorRouting(socketio.AsyncNamespace):
                 task.cancel()
             self.tasks.clear()
 
-    async def on_sendMagnet(self, sid, radius, radius_unit, height, height_unit, magnetism, magnetism_unit):
-        length_conversion = {"mm": 1, "inch": 25.4, "inch/16": 25.4/16, "inch/32":25.4/32}
+    async def on_sendMagnet(
+        self, sid, radius, radius_unit, height, height_unit, magnetism, magnetism_unit
+    ):
+        length_conversion = {
+            "mm": 1,
+            "inch": 25.4,
+            "inch/16": 25.4 / 16,
+            "inch/32": 25.4 / 32,
+        }
         magnetism_conversion = {"mT": 1}
-        convert = lambda conv, val, val_unit: conv[val_unit]*val
+        convert = lambda conv, val, val_unit: conv[val_unit] * val
         radius_c = convert(length_conversion, radius, radius_unit)
         height_c = convert(length_conversion, height, height_unit)
         magnetism_c = convert(magnetism_conversion, magnetism, magnetism_unit)
@@ -96,12 +101,15 @@ class SensorRouting(socketio.AsyncNamespace):
         self.magnet_shape = np.array([radius_c, height_c])
         self.magnet_magnetization = np.array([magnetism_c])
 
-
     async def send_sensor_vals(self):
         try:
             while True:
                 pos, mag = await self.get_sensor_vals()
-                data = {"data": [{"pos": p, "mag": m} for p, m in zip(pos, mag)]}
+                data = {
+                    "data": [
+                        {"pos": p, "mag": m[:3], "temp": m[3]} for p, m in zip(pos, mag)
+                    ]
+                }
                 await self.emit("sensors", data)
         except asyncio.CancelledError:
             print("Sending Sensor Values task cancelled")
@@ -121,7 +129,7 @@ class SensorRouting(socketio.AsyncNamespace):
                     asyncio.sleep(0.5),
                 )
                 self.current_prediction = calc_predicted
-                predicted = calc_predicted-np.pad(self.shift, (0, 3))
+                predicted = calc_predicted - np.pad(self.shift, (0, 3))
                 data = {
                     "pos": {"x": predicted[0], "y": predicted[1], "z": predicted[2]},
                     "rot": {"x": predicted[3], "y": predicted[4], "z": predicted[5]},
@@ -133,11 +141,13 @@ class SensorRouting(socketio.AsyncNamespace):
     async def get_sensor_vals(self):
         mags_task = asyncio.to_thread(self.sensor_group.get_magnetometer)
         pos_task = asyncio.to_thread(self.sensor_group.get_positions)
-        mags, pos = await asyncio.gather(mags_task, pos_task, return_exceptions=True)  # , asyncio.sleep(0.1))
+        mags, pos = await asyncio.gather(
+            mags_task, pos_task, return_exceptions=True
+        )  # , asyncio.sleep(0.1))
         for m in mags:
             if m is Exception:
                 raise m
-        await self.sensor_vals.add((mags, pos))
+        await self.sensor_vals.add((mags[:3], pos))
         # await asyncio.sleep(0.1)
         return (pos, mags)
 
@@ -149,26 +159,34 @@ class SensorRouting(socketio.AsyncNamespace):
         sensors = self.sensor_group.sensors
         print(setting, setting_val)
         print(dir(sensors[0]))
-        valid_attrs = {"filter", "gain", "oversampling", "resolution_x", "resolution_y", "resolution_z"}
+        valid_attrs = {
+            "filter",
+            "gain",
+            "oversampling",
+            "resolution_x",
+            "resolution_y",
+            "resolution_z",
+        }
         if setting in valid_attrs:
-            if setting=="filter":
+            if setting == "filter":
                 for s in sensors:
-                    s.filter = setting_val 
-            elif setting=="gain":
+                    s.filter = setting_val
+            elif setting == "gain":
                 for s in sensors:
                     s.gain = setting_val
-            elif setting=="oversampling":
+            elif setting == "oversampling":
                 for s in sensors:
                     s.oversampling = setting_val
-            elif setting=="resolution_x":
+            elif setting == "resolution_x":
                 for s in sensors:
                     s.resolution_x = setting_val
-            elif setting=="resolution_y":
+            elif setting == "resolution_y":
                 for s in sensors:
                     s.resolution_y = setting_val
-            elif setting=="resolution_z":
+            elif setting == "resolution_z":
                 for s in sensors:
                     s.resolution_z = setting_val
+
     async def on_setTemperatureCompensation(self, sid, tempCompEnabled):
         try:
             for i, sensor in enumerate(self.sensor_group.sensors):
@@ -178,5 +196,3 @@ class SensorRouting(socketio.AsyncNamespace):
         except Exception as e:
             await self.emit("sendTemperatureCompensation", not tempCompEnabled)
             raise e
-
-
