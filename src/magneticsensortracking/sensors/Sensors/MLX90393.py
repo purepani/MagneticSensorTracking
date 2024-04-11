@@ -13,29 +13,19 @@ from busio import I2C
 from circuitpython_typing import ReadableBuffer
 
 
-class MLX90393_driver(adafruit_mlx90393.MLX90393):
-
-
 class MLX90393(base.Sensor):
-    def __init__(
-        self,
-        i2c,
-        address,
-        **kwargs
-    ):
+    def __init__(self, i2c, address, **kwargs):
         if adafruit_mlx90393:
-            self.sensor = adafruit_mlx90393.MLX90393(
-                i2c,
-                address=address,
-                **kwargs
-            )
+            self.sensor = adafruit_mlx90393.MLX90393(i2c, address=address, **kwargs)
         else:
             print("This class needs the package adafruit_circuitpython_mlx90393")
 
-
     def get_magnetometer(self):
         x, y, z, t = self.magnetic_and_temp
-        return x/1000, y/1000, z/1000
+        return x / 1000, y / 1000, z / 1000
+
+    def get_temperature(self):
+        return self.sensor.temperature
 
     @property
     def read_data(self) -> Tuple[int, int, int, int]:
@@ -43,7 +33,10 @@ class MLX90393(base.Sensor):
         Reads a single X/Y/Z/T sample from the magnetometer.
         """
         # Set conversion delay based on filter and oversampling
-        delay = adafruit_mlx90393._TCONV_LOOKUP[self.sensor._filter][self.sensor._osr] / 1000  # per datasheet
+        delay = (
+            adafruit_mlx90393._TCONV_LOOKUP[self.sensor._filter][self.sensor._osr]
+            / 1000
+        )  # per datasheet
         delay *= 1.1  # plus a little
 
         # Set the device to single measurement mode
@@ -83,13 +76,18 @@ class MLX90393(base.Sensor):
             raise ValueError("Incorrect HALLCONF value, must be '0x0C' or '0x00'.")
 
         # Convert the raw integer values to uT based on gain and resolution
-        x *= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][self.sensor._res_x][0]
-        y *= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][self.sensor._res_y][0]
-        z *= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][self.sensor._res_z][1]
-        t = 35 + ((tvalue-treference)/45.2)
+        x *= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][
+            self.sensor._res_x
+        ][0]
+        y *= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][
+            self.sensor._res_y
+        ][0]
+        z *= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][
+            self.sensor._res_z
+        ][1]
+        t = 35 + ((tvalue - treference) / 45.2)
 
         return x, y, z, t
-
 
     @property
     def filter(self):
@@ -115,7 +113,6 @@ class MLX90393(base.Sensor):
     def oversampling(self, val):
         self.sensor.oversampling = val
 
-
     @property
     def resolution_x(self):
         return self.sensor.resolution_x
@@ -123,7 +120,6 @@ class MLX90393(base.Sensor):
     @resolution_x.setter
     def resolution_x(self, val):
         self.sensor.resolution_x = val
-    
 
     @property
     def resolution_y(self):
@@ -142,11 +138,11 @@ class MLX90393(base.Sensor):
         self.sensor.resolution_z = val
 
     @property
-    def temperature_compensation(self,):
+    def temperature_compensation(
+        self,
+    ):
         return self.sensor.temperature_compensation
 
-    @temperature_compensation.setter 
+    @temperature_compensation.setter
     def temperature_compensation(self, val):
-        self.sensor.temperature_compensation=val
-
-
+        self.sensor.temperature_compensation = val

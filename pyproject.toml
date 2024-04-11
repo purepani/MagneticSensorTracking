@@ -20,7 +20,7 @@ dependencies = [
     "scipy>=1.9.3",
     "requests>=2.31.0",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -32,7 +32,7 @@ sensors = [
       "lsm303d"
 ]
 printer = [
-  "printrun"
+  #"printrun"
 ]
 camera = [
   #"picamera2"

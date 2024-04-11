@@ -24,8 +24,7 @@
       <div
 	x-init="$nextTick(()=>{logging_socket.emit('get_settings')})"
         x-data="{form_folder:'', form_samples:10, folder: '', samples: 10, measuring: false}"
-        @settings.window="folder=$event.detail.data.folder"
-        @settings.window="samples=$event.detail.data.samples"
+        @settings.window="folder=$event.detail.data.folder; samples=$event.detail.data.samples;"
       >
         <h3>Measurements</h3>
         <form @submit.prevent="logging_socket.emit('set_settings', form_folder, form_samples)">
