@@ -28,10 +28,12 @@ def get_sensor(a, i2c):
 
 async def get_sensors(addresses):
     i2c=board.I2C()
-    sensors_tasks = [asyncio.to_thread(get_sensor, a, i2c) for a in addresses]
-    sensors = await asyncio.gather(*sensors_tasks)
+    #sensors_tasks = [asyncio.to_thread(get_sensor, a, i2c) for a in addresses]
+    #sensors = await asyncio.gather(*sensors_tasks)
+    sensors = [get_sensor(a, i2c) for a in addresses]
     return sensors
 
 sensors = asyncio.get_event_loop().run_until_complete( get_sensors(range(0x0c, 0x1c)))
 for s in sensors:
+    print(s.get_magnetometer())
     print(s.get_temperature())

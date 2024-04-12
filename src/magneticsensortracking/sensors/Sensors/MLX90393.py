@@ -22,7 +22,7 @@ class MLX90393(base.Sensor):
 
     def get_magnetometer(self):
         x, y, z, t = self.magnetic_and_temp
-        return x / 1000, y / 1000, z / 1000
+        return x / 1000, y / 1000, z / 1000, t
 
     def get_temperature(self):
         return self.sensor.temperature
@@ -40,7 +40,7 @@ class MLX90393(base.Sensor):
         delay *= 1.1  # plus a little
 
         # Set the device to single measurement mode
-        self.sensor_transceive(bytes([adafruit_mlx90393._CMD_SM | 0xF]))
+        self.sensor._transceive(bytes([adafruit_mlx90393._CMD_SM | 0xF]))
 
         # Insert a delay since we aren't using INTs for DRDY
         time.sleep(delay)
@@ -50,10 +50,10 @@ class MLX90393(base.Sensor):
 
         # Unpack status and raw int values
         self.sensor.sensor_status_last = data[0]
-        m_x = self.sensor._unpack_axis_data(self.sensor._res_x, data[1:3])
-        m_y = self.sensor._unpack_axis_data(self.sensor._res_y, data[3:5])
-        m_z = self.sensor._unpack_axis_data(self.sensor._res_z, data[5:7])
-        t = struct.unpack(">H", data[7:9])[0]
+        m_x = self.sensor._unpack_axis_data(self.sensor._res_x, data[3:5])
+        m_y = self.sensor._unpack_axis_data(self.sensor._res_y, data[5:7])
+        m_z = self.sensor._unpack_axis_data(self.sensor._res_z, data[7:9])
+        t = struct.unpack(">H", data[1:3])[0]
 
         # Return the raw int values if requested
         return m_x, m_y, m_z, t

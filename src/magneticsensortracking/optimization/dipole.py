@@ -37,11 +37,11 @@ def cost_dipole(x, B, positions, M0, shape):
 
 def minimize(x0, B, positions, M0, shape, *args):
     print("Starting mimimization")
-    args = (B, positions, M0, shape)
+    b_args = (B, positions, M0, shape)
     cons = [{"type": "eq", "fun": lambda x: x[3] ** 2 + x[4] ** 2 + x[5] ** 2 - 1}]
     bounds = [(-100, 100), (-100, 100), (0, 100), (-1, 1), (-1, 1), (-1, 1)]
     res = sp.optimize.minimize(
-        fun=cost_dipole, x0=x0, args=args, tol=1e-100, constraints=cons, bounds=bounds, *args
+        fun=cost_dipole, x0=x0, args=b_args, tol=1e-100, constraints=cons, bounds=bounds, *args
     ).x  
-    print(f"Finished mimimization with shape {args[3]} at {res}")
+    print(f"Finished mimimization with shape {b_args[3]} at {res}")
     return res

@@ -17,8 +17,11 @@ from quart import Blueprint, Response, jsonify, render_template, request
 from quart.utils import run_sync
 
 from magneticsensortracking import sensors
-from magneticsensortracking.optimization.find_position import minimize
+from magneticsensortracking.optimization.dipole import minimize
 
+from pathlib import Path
+
+from datetime import datetime
 
 class AsyncCircularBuffer:
     def __init__(self, size):
@@ -30,7 +33,7 @@ class AsyncCircularBuffer:
     async def add(self, item):
         async with self.lock:
             self.buffer.append(item)
-            if len(self.buffer) == 1:
+            if len(self.buffer) >= 1:
                 self.not_empty.notify_all()
 
     async def remove(self):
@@ -47,6 +50,30 @@ class AsyncCircularBuffer:
             self.buffer.clear()
             return items
 
+class AsyncBufferAndWriter:
+    def __init__(self, size, log_path):
+        self.buffer = AsyncCircularBuffer(size)
+        self.path = Path(log_path)
+        with open(self.path, 'x+') as f:
+            pass
+
+    async def addData(self, mags, pos, temp):
+        await self.buffer.add([np.asarray(mags), np.asarray(pos), np.asarray(temp)])
+
+    async def removeData(self):
+        await self.buffer.remove()
+
+    async def getAndLogData(self):
+        vals = await self.buffer.clear_and_retrieve()
+        mags_and_pos = np.asarray([sample[:2] for sample in vals])
+        mags = mags_and_pos[:, 0]
+        pos = mags_and_pos[:, 1]
+        temp = np.asarray([sample[2] for sample in vals])
+        time = datetime.now()
+        data_to_save = {f'mags_{time}': mags,f'pos_{time}': pos, f'temp_{time}': temp}
+        with open(self.path, 'ab') as f:
+            np.savez(f, **data_to_save)
+        return vals
 
 pool = ProcessPoolExecutor()
 
@@ -56,7 +83,7 @@ class SensorRouting(socketio.AsyncNamespace):
         self.sensor_group = sensor_group
         self.magnet_shape = np.array([25.4 * 3 / 16, 25.4 * 2 / 16])
         self.magnet_magnetization = np.array([1480])
-        self.sensor_vals = AsyncCircularBuffer(maxlen)
+        self.sensor_vals = AsyncBufferAndWriter(maxlen, str(f'/home/raspberrypi/logs/{datetime.now()}.npz'))
         self.current_prediction = np.zeros((6,))
         self.shift = np.array([0, 0, 0])
         self.tasks = []
@@ -125,14 +152,18 @@ class SensorRouting(socketio.AsyncNamespace):
                 x0 = np.array([0, 0, 30, 0, 0, 1])
                 M0 = self.magnet_magnetization
                 shape = self.magnet_shape
-                queue_vals = await self.sensor_vals.clear_and_retrieve()
-                vals = np.asarray(queue_vals)
-                mags, pos = np.average(vals, axis=0)
+                queue_vals = await self.sensor_vals.getAndLogData()
+                vals = np.asarray([sample[:2] for sample in queue_vals])
+                mags, pos, = np.average(vals, axis=0)
                 loop = asyncio.get_running_loop()
                 calc_predicted, _ = await asyncio.gather(
                     loop.run_in_executor(pool, minimize, x0, mags, pos, M0, shape),
                     asyncio.sleep(0.5),
+                    return_exceptions=True
                 )
+                for val in calc_predicted:
+                    if val is Exception:
+                        raise val
                 self.current_prediction = calc_predicted
                 predicted = calc_predicted - np.pad(self.shift, (0, 3))
                 data = {
@@ -147,14 +178,15 @@ class SensorRouting(socketio.AsyncNamespace):
         mags_task = asyncio.to_thread(self.sensor_group.get_magnetometer)
         pos_task = asyncio.to_thread(self.sensor_group.get_positions)
 
-        mags, pos = await asyncio.gather(
+        mags_and_temp, pos = await asyncio.gather(
             mags_task, pos_task, return_exceptions=True
         )  # , asyncio.sleep(0.1))
-        for m in mags:
+        for m in mags_and_temp:
             if m is Exception:
                 raise m
-        temp = [m[3] for m in mags]
-        await self.sensor_vals.add((mags[:3], pos))
+        temp = [m[3] for m in mags_and_temp]
+        mags = [m[:3] for m in mags_and_temp]
+        await self.sensor_vals.addData(mags, pos, temp)
         await asyncio.sleep(0.1)
         return (pos, mags, temp)
 

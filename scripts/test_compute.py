@@ -7,6 +7,7 @@ import scipy as sp
 from itertools import product
 
 from concurrent.futures import ProcessPoolExecutor
+from magneticsensortracking.optimization.dipole import minimize
 
 
 def B_dipole(position, rotation, M0, shape):
@@ -73,13 +74,13 @@ def cost_dipole(x, B, positions, M0, shape):
     return np.sum((diff) ** 2)
 
 
-def minimize(x0, args):
-    print("Starting mimimization")
-    #args = list(map(np.asarray, args))
-    cons = [{'type': 'eq', 'fun': lambda x: x[3]**2+x[4]**2+x[5]**2-1}]
-    res = sp.optimize.minimize(fun=cost_dipole, x0=x0, args=args, tol=1e-50, options={'maxiter': 1000}, constraints=cons).x
-    print("Finished mimimization")
-    return res
+#def minimize(x0, args):
+    #print("Starting mimimization")
+    ##args = list(map(np.asarray, args))
+    #cons = [{'type': 'eq', 'fun': lambda x: x[3]**2+x[4]**2+x[5]**2-1}]
+    #res = sp.optimize.minimize(fun=cost_dipole, x0=x0, args=args, tol=1e-50, options={'maxiter': 1000}, constraints=cons).x
+    #print("Finished mimimization")
+    #return res
 
 def get_sensor(a):
     print(f"Starting sensor {hex(a)}")
@@ -95,10 +96,11 @@ if __name__=="__main__":
     s = get_sensors(range(0x0c, 0x1c))
     positions = [[a, b, 0.] for b,a in product(list(np.linspace(0,13.5, 4, endpoint=True)), list(np.linspace(0,-13.5,4, endpoint=True)))]
     sensor_group = sensors.base.SensorGroup(sensors=s, positions=positions)
-    shape = np.array([25.4*3/16, 25.4*3/16])
-    M0 = np.array([1210])
+    shape = np.array([25.4*3/16, 25.4*2/16])
+    M0 = np.array([1480])
     x0 = np.array([0,0,30, 0, 0, 1])
-    mags = np.array(sensor_group.get_magnetometer())
+    mags_and_temp = np.array(sensor_group.get_magnetometer())
+    mags = [m[:3] for m in mags_and_temp]
     pos = np.array(sensor_group.get_positions())
-    predicted = minimize(x0, (mags, pos, M0, shape))
+    predicted = minimize(x0, mags, pos, M0, shape)
     print(predicted)
