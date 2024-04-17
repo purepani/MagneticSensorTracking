@@ -54,8 +54,7 @@ class AsyncBufferAndWriter:
     def __init__(self, size, log_path):
         self.buffer = AsyncCircularBuffer(size)
         self.path = Path(log_path)
-        with open(self.path, 'x+') as f:
-            pass
+        self.path.mkdir()
 
     async def addData(self, mags, pos, temp):
         await self.buffer.add([np.asarray(mags), np.asarray(pos), np.asarray(temp)])
@@ -69,9 +68,10 @@ class AsyncBufferAndWriter:
         mags = mags_and_pos[:, 0]
         pos = mags_and_pos[:, 1]
         temp = np.asarray([sample[2] for sample in vals])
-        time = datetime.now()
-        data_to_save = {f'mags_{time}': mags,f'pos_{time}': pos, f'temp_{time}': temp}
-        with open(self.path, 'ab') as f:
+        time = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        print(time)
+        data_to_save = {f'mags': mags,f'pos': pos, f'temp': temp}
+        with open(self.path / f'{time}.npz', 'wb') as f:
             np.savez(f, **data_to_save)
         return vals
 
@@ -83,7 +83,8 @@ class SensorRouting(socketio.AsyncNamespace):
         self.sensor_group = sensor_group
         self.magnet_shape = np.array([25.4 * 3 / 16, 25.4 * 2 / 16])
         self.magnet_magnetization = np.array([1480])
-        self.sensor_vals = AsyncBufferAndWriter(maxlen, str(f'/home/raspberrypi/logs/{datetime.now()}.npz'))
+        time = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        self.sensor_vals = AsyncBufferAndWriter(maxlen, str(f'/home/raspberrypi/logs/{time}'))
         self.current_prediction = np.zeros((6,))
         self.shift = np.array([0, 0, 0])
         self.tasks = []
