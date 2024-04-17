@@ -45,11 +45,11 @@ def create_app(sensors):
     positions = [[a, b, 0.] for b,a in product(list(np.linspace(-13.5/2,13.5/2, 4, endpoint=True)), list(np.linspace(13.5/2,-13.5/2,4, endpoint=True)))]
     for a, p in zip(range(0x0c, 0x1c), positions):
             print(hex(a), p)
-    printer = positioning.devices.PRUSA(
-        "/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
-        115200,
-    )
-    #printer = positioning.devices.VIRTUAL()
+    #printer = positioning.devices.PRUSA(
+    #    "/dev/serial/by-id/usb-Prusa_Research__prusa3d.com__Original_Prusa_i3_MK2_CZPX1017X003XC14071-if00",
+    #    115200,
+    #)
+    printer = positioning.devices.VIRTUAL()
     app_factory = ui.AppFactory()
     app_factory = reduce(
         lambda x, y: x.addSensor(*y), zip(s, positions), app_factory
