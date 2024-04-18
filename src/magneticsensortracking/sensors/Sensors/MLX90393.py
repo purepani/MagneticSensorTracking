@@ -137,6 +137,34 @@ class MLX90393(base.Sensor):
     def resolution_z(self, val):
         self.sensor.resolution_z = val
 
+    def write_offsets(self, x, y, z):
+        x *= 1000
+        y *= 1000
+        z *= 1000
+        # Check for valid HALLCONF value and set _LSB_LOOKUP index
+        if adafruit_mlx90393._HALLCONF == 0x0C:
+            hallconf_index = 0
+        elif adafruit_mlx90393._HALLCONF == 0x00:
+            hallconf_index = 1
+        else:
+            raise ValueError("Incorrect HALLCONF value, must be '0x0C' or '0x00'.")
+        x /= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][
+            self.sensor._res_x
+        ][0]
+        y /= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][
+            self.sensor._res_y
+        ][0]
+        z /= adafruit_mlx90393._LSB_LOOKUP[hallconf_index][self.sensor._gain_current][
+            self.sensor._res_z
+        ][1]
+        x = int(x) + 0x8000
+        y = int(y) + 0x8000
+        z = int(z) + 0x8000
+        print(x, y, z)
+        self.sensor.write_reg(0x04, x)
+        self.sensor.write_reg(0x05, y)
+        self.sensor.write_reg(0x06, z)
+
     @property
     def temperature_compensation(
         self,

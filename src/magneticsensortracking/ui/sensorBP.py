@@ -75,6 +75,10 @@ class AsyncBufferAndWriter:
             np.savez(f, **data_to_save)
         return vals
 
+    async def setLoggingPath(self, log_path):
+        self.path = Path(log_path)
+        self.path.mkdir()
+
 pool = ProcessPoolExecutor()
 
 
@@ -236,3 +240,7 @@ class SensorRouting(socketio.AsyncNamespace):
         except Exception as e:
             await self.emit("sendTemperatureCompensation", not tempCompEnabled)
             raise e
+    async def on_reset_logging(self, sid):
+        time = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        path = str(f'/home/raspberrypi/logs/{time}')
+        await self.sensor_vals.setLoggingPath(path)

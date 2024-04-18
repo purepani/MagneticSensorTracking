@@ -59,11 +59,13 @@ def create_app(sensors):
 
 async def main():
     sensors = await get_sensors(range(0x0c, 0x1c))
-    offsets = np.loadtxt("offset_cal.csv", dtype=np.uint16)
+    offsets = np.load("offset_cal_elipse.npy")
     for i, sensor in enumerate(sensors):
-        sensor.sensor.write_reg(0x04, offsets[i, 0])
-        sensor.sensor.write_reg(0x05, offsets[i, 1])
-        sensor.sensor.write_reg(0x06, offsets[i, 2])
+        x, y, z = offsets[i]
+        sensor.write_offsets(x, y, z)
+        #sensor.sensor.write_reg(0x04, offsets[i, 0])
+        #sensor.sensor.write_reg(0x05, offsets[i, 1])
+        #sensor.sensor.write_reg(0x06, offsets[i, 2])
     app = create_app(sensors)
     #uvicorn.rnn("server:create_app", port=5000, host="127.0.0.1")
     config = uvicorn.Config(app, port=5000, host="127.0.0.1")

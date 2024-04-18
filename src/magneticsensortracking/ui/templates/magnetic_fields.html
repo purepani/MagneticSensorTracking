@@ -66,6 +66,7 @@
             Bx: <text x-text="sensor.mag[0].toFixed(5)"></text><br />
             By: <text x-text="sensor.mag[1].toFixed(5)"></text><br />
             Bz: <text x-text="sensor.mag[2].toFixed(5)"></text><br />
+            B: <text x-text="Math.sqrt(sensor.mag[0]**2+sensor.mag[1]**2+sensor.mag[2]**2).toFixed(5)"></text><br />
             T: <text x-text="sensor.temp.toFixed(3)"></text><br />
           </div>
         </template>
