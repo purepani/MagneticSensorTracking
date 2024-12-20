@@ -2,6 +2,7 @@ from quart import Blueprint, render_template, Response, jsonify, request
 import socketio
 
 from magneticsensortracking import positioning, sensors
+from datetime import datetime
 
 import argparse
 import asyncio
@@ -11,6 +12,8 @@ import io
 import os
 import platform
 import ssl
+
+import numpy as np
 
 
 class Logging(socketio.AsyncNamespace):
@@ -22,7 +25,6 @@ class Logging(socketio.AsyncNamespace):
         *args,
         **kwargs,
     ):
-        self.measurement_index = 0
         self.printer = printer
         self.sensor_group = sensor_group
         self.samples = samples
@@ -32,7 +34,6 @@ class Logging(socketio.AsyncNamespace):
         super().__init__(*args, **kwargs)
 
     async def on_start_measurement(self, sid):
-        self.measurement_index = 0
         path = f"{self.save_path}/{self.current_folder}"
         if not os.path.exists(path):
             os.makedirs(path)
@@ -44,19 +45,15 @@ class Logging(socketio.AsyncNamespace):
         self.measuring=True
         print("Recording Measurement")
         pos = self.printer.getPos()
-        mags = [await self.get_sensor_vals() for _ in range(self.samples)]
-        file_path = f"{self.save_path}/{self.current_folder}/{self.measurement_index}.data"
-        with open(file_path, "w+") as f:
-            print(f"Opened {file_path}") 
-            f.write("Position\n")
-            f.write(f"{','.join(map(str, pos))}\n")
-            f.write("Magentizations\n")
-            #f.writelines(map(lambda l: ', '.join(map(lambda p: str(tuple(p)), l)), mags))
-            create_sens_string = lambda x: f"({','.join(map(str, x))})"
-            create_line = lambda l: ', '.join(map(create_sens_string, l))+"\n"
-            list(map(f.write, map(create_line, mags)))
-
-        self.measurement_index += 1
+        vals = [await self.get_sensor_vals() for _ in range(self.samples)]
+        mags = np.array([m for _, m, _ in vals])
+        pos = np.array([p for p, _, _ in vals])
+        temp = np.array([t for _, _, t in vals])
+        time = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        file_path = f"{self.save_path}/{self.current_folder}/{time}.npz"
+        data_to_save = {f'mags': mags,f'pos': pos, f'temp': temp}
+        with open(file_path, "wb") as f:
+            np.savez(f, **data_to_save)
         self.measuring=False
         print("Finished Recording")
         await self.emit("finished_measurement")
@@ -79,10 +76,17 @@ class Logging(socketio.AsyncNamespace):
                             "folder": f"{self.save_path}/{self.current_folder}"
                             }
                         )
-
     async def get_sensor_vals(self):
         mags_task = asyncio.to_thread(self.sensor_group.get_magnetometer)
         pos_task = asyncio.to_thread(self.sensor_group.get_positions)
-        mags, pos = await asyncio.gather(mags_task, pos_task)  # , asyncio.sleep(0.1))
-        # await asyncio.sleep(0.1)
-        return (pos, mags)
+
+        mags_and_temp, pos = await asyncio.gather(
+            mags_task, pos_task, return_exceptions=True
+        )  # , asyncio.sleep(0.1))
+        for m in mags_and_temp:
+            if m is Exception:
+                raise m
+        temp = [m[3] for m in mags_and_temp]
+        mags = [m[:3] for m in mags_and_temp]
+        await asyncio.sleep(0.1)
+        return (pos, mags, temp)
