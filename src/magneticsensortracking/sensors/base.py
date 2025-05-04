@@ -1,12 +1,11 @@
 from collections.abc import MutableSequence
+from abc import ABC, abstractmethod
 
 
-class Sensor:
-    def __init__(self):
-        raise NotImplementedError()
-
+class Sensor(ABC):
+    @abstractmethod
     def get_magnetometer(self):
-        raise NotImplementedError()
+        return
 
 
 class SensorGroup:
