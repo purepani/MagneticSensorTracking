@@ -38,10 +38,17 @@ camera = [
   #"picamera2"
 ]
 
+[project.scripts]
+startserver = "magneticsensortracking.ui:main"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
+[tool.uv.workspace]
+members = ["packages/*"]
+
 [tool.pdm.scripts]
 #startserver = {call = "magneticsensortracking.ui:main"}
 startserver = "uvicorn --factory magneticsensortracking.ui:main"
+

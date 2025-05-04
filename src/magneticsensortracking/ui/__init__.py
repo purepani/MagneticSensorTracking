@@ -3,8 +3,10 @@ import os
 import random
 from quart import Quart
 import socketio
+import uvicorn
 from time import sleep
 import board
+from functools import partial
 
 from quart import (
     Blueprint,
@@ -83,3 +85,7 @@ class AppFactory:
 
 
 main = AppFactory().setFakeSensor().setFakePrinter().create_app
+
+if __name__=="__main__":
+  main = uvicorn.run(main)
+
