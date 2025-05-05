@@ -10,8 +10,8 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "magnetic-solver",
     "magneticsensortracking",
+    "magneticsolver",
 ]
 
 [[package]]
@@ -810,25 +810,6 @@ wheels = [
 ]
 
 [[package]]
-name = "magnetic-solver"
-version = "0.1.0"
-source = { virtual = "packages/magnetic-solver" }
-dependencies = [
-    { name = "einops" },
-    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "numpy", version = "2.2.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-    { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "scipy", version = "1.15.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "einops", specifier = ">=0.8.1" },
-    { name = "numpy", specifier = ">=2.0.2" },
-    { name = "scipy", specifier = ">=1.13.1" },
-]
-
-[[package]]
 name = "magneticsensortracking"
 version = "0.1.0"
 source = { editable = "." }
@@ -839,6 +820,7 @@ dependencies = [
     { name = "flask" },
     { name = "flask-sock" },
     { name = "flask-socketio" },
+    { name = "magneticsolver" },
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pandas" },
@@ -868,6 +850,7 @@ requires-dist = [
     { name = "flask-sock", specifier = ">=0.7.0" },
     { name = "flask-socketio", specifier = ">=5.3.6" },
     { name = "lsm303d", marker = "extra == 'sensors'" },
+    { name = "magneticsolver", editable = "packages/magneticsolver" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "python-socketio", specifier = ">=5.10.0" },
@@ -877,6 +860,25 @@ requires-dist = [
     { name = "uvicorn", specifier = ">=0.23.2" },
 ]
 provides-extras = ["sensors", "printer", "camera"]
+
+[[package]]
+name = "magneticsolver"
+version = "0.1.0"
+source = { editable = "packages/magneticsolver" }
+dependencies = [
+    { name = "einops" },
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "scipy", version = "1.15.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "einops", specifier = ">=0.8.1" },
+    { name = "numpy", specifier = ">=2.0.2" },
+    { name = "scipy", specifier = ">=1.13.1" },
+]
 
 [[package]]
 name = "markupsafe"
